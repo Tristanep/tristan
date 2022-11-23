@@ -7,6 +7,8 @@ let checkboxes = {
 
 let flashSnakeStatus = {flashCount:0, currentlyFlashingSnake:false, durationMillisecond:1000};
 
+var snakeScale = {tailStart: 1,tailEnd: 1,face: 1,eyes: 1};
+
 let dragHandler = {
   dragItem:null,
   dragContainer:null,
@@ -147,6 +149,7 @@ function setupEventListeners() {
   document.getElementById('sokoban-goal').onchange = function() {
     checkboxes.checkboxStatuses.sokobanGoal = this.checked;
   }
+  document.getElementById('spin').onchange = spinHandler;
 }
 
 function injectInitialHtml() {
@@ -155,7 +158,7 @@ function injectInitialHtml() {
   <div id="delete-stuff-draggable" style="width:320px;background-color:khaki;z-index:9002;border-color:saddlebrown;border-style:solid;border-width:4px; border-radius:10px;box-shadow: 0 3px 10px rgba(0,0,0,0.4);position:fixed;left:600px;top:5px">
     <div id="drag-handle" style="width:22px;height:22px;background-color: #fff5d4;position:absolute;border-top-left-radius:4px;border-bottom-right-radius:18px;border-right:3px solid saddlebrown;border-bottom:3px solid saddlebrown;cursor:move"></div>
     <div style="padding:10px;width:300px;margin:0;">
-      <div style="text-align:center;padding:5px;background-color:darkkhaki;color:black;font-family:impact;font-size:20px">your gay Mod</div>
+      <div style="text-align:center;padding:5px;background-color:darkkhaki;color:black;font-family:impact;font-size:20px">Delete Stuff Mod</div>
       <div style="background-color:darkkhaki;margin-top:5px;padding:0px;padding-bottom:10px;font-family:impact;color:saddlebrown">
         <!--Begin test area-->
         <!--Snake body Section-->
@@ -213,6 +216,9 @@ function injectInitialHtml() {
           <ul style="list-style-type: none;padding:5px;margin-top:0;margin-bottom:0">
             <li>
               <label><input id="border" type="checkbox" checked>Border</label>
+            </li>
+            <li>
+              <label><input id="spin" type="checkbox">???</label>
             </li>
           </ul>
         </div>
@@ -294,9 +300,16 @@ function injectInitialHtml() {
 function setupCss() {
   let customStyle  = document.createElement('style');
   customStyle.type = 'text/css';
-  customStyle.innerHTML = '.tooltip:hover .tooltiptext:not(:hover){visibility:visible!important;opacity:1!important;}' + 
-  '#drag-handle:hover{background-color:#f2e4b8!important;}' +
-  '#delete-stuff-popup label,#delete-stuff-popup div{user-select:none;}';
+  customStyle.innerHTML = `.tooltip:hover .tooltiptext:not(:hover){visibility:visible!important;opacity:1!important;}
+  #drag-handle:hover{background-color:#f2e4b8!important;}
+  #delete-stuff-popup label,#delete-stuff-popup div{user-select:none;}
+  
+  :root {--rotation-period: 30s;}
+  .cer0Bd[data-spin='true']{animation: spin var(--rotation-period) linear infinite;}
+  .cer0Bd[data-spin='x']{animation: spinx var(--rotation-period) linear infinite;} 
+  @keyframes spin { 100% { transform:rotate(360deg); } }
+  @keyframes spinx { 100% { transform:rotateX(360deg); } }
+  `;
   document.getElementsByTagName('head')[0].appendChild(customStyle);
 }
 
@@ -352,6 +365,26 @@ function brieflyShowSnake() {
   );
 }
 
+function spinHandler() {
+  let canvasElement = document.getElementsByClassName('cer0Bd')[0];
+  if(!this.checked) {
+    canvasElement.dataset.spin = 'false';
+  } else {
+    let r = document.querySelector(':root');
+    let promptResponse = prompt('How many seconds should a spin take? Enter a number','30');
+    promptResponse = parseFloat(promptResponse);
+    if(isNaN(promptResponse) || promptResponse <= 0) {
+      alert('Invalid value entered. Defaulting to 30');
+      r.style.setProperty('--rotation-period', '30s');
+    } else {
+      alert(`Spinning every ${promptResponse} seconds.`);
+      r.style.setProperty('--rotation-period', promptResponse + 's');
+    }
+    let spinAroundZ = confirm('Spin around z axis?');//Spin around x or z axis.
+    canvasElement.dataset.spin = spinAroundZ ? 'true' : 'x';
+  }
+}
+
 window.snake.deleteStuffMod = function(){
   injectInitialHtml();
   setupCss();
@@ -376,29 +409,44 @@ window.snake.deleteStuffMod = function(){
 
 function processCode(code) {
   //Function for body parts
-let rightEyeRegex = /\([$a-zA-Z0-9_]{0,6}\?[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}:[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\)\.render\([$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6}\),/;
+  let rightEyeRegex = /(\([a-z]\?[a-z]\.[$a-zA-Z0-9_]{0,6}:[a-z]\.[$a-zA-Z0-9_]{0,6}\)\.render\([a-z],\n?[a-z],[a-z],[a-z]\.[$a-zA-Z0-9_]{0,6},[a-z])(\),)/;
 
   let funcWithBodyParts = findFunctionInCode(code, /[$a-zA-Z0-9_]{0,6}=function\(a,b,c,d,e\)$/,
-  rightEyeRegex, 
+  rightEyeRegex,
   deleteModDebug);
 
+  //Right Eye
   funcWithBodyParts = assertReplace(funcWithBodyParts, rightEyeRegex,
-  '(flashSnakeStatus.currentlyFlashingSnake || checkboxes.checkboxStatuses.rightEye) && $&');
+  '(flashSnakeStatus.currentlyFlashingSnake || checkboxes.checkboxStatuses.rightEye) && $1 * snakeScale.eyes $2');
 
-  funcWithBodyParts = assertReplace(funcWithBodyParts,/\([$a-zA-Z0-9_]{0,6}\?[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}:[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\)\.render\([$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6},\n?[$a-zA-Z0-9_]{0,6}\)\);/,
-  '(flashSnakeStatus.currentlyFlashingSnake || checkboxes.checkboxStatuses.leftEye) && $&');
+  //Left Eye
+  funcWithBodyParts = assertReplace(funcWithBodyParts,/(\([$a-zA-Z0-9_]{0,6}\?[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}:[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\)\.render\([$a-zA-Z0-9_]{0,6},\n?[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6},\n?[$a-zA-Z0-9_]{0,6})(\)\);)/,
+  '(flashSnakeStatus.currentlyFlashingSnake || checkboxes.checkboxStatuses.leftEye) && $1 * snakeScale.eyes $2');
 
-  funcWithBodyParts = assertReplace(funcWithBodyParts,/\([$a-zA-Z0-9_]{0,6}\?[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}:[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\)\.render\(Math\.floor\([$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\),[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6}\);/,
-  '(flashSnakeStatus.currentlyFlashingSnake || checkboxes.checkboxStatuses.eatAnimation) && $&');
+  //Eye offsets
+  funcWithBodyParts = assertReplaceAll(funcWithBodyParts,/[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\+=\n?Math\.(?:cos|sin)\([$a-zA-Z0-9_]{0,6}[+-][$a-zA-Z0-9_]{0,6}\)\*[$a-zA-Z0-9_]{0,6}/g,
+  '$& * snakeScale.eyes');
 
-  funcWithBodyParts = assertReplace(funcWithBodyParts,/\([$a-zA-Z0-9_]{0,6}\?[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}:[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\)\.render\([$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6}\)\)}/,
-  'checkboxes.checkboxStatuses.tongue && $&');
 
-  funcWithBodyParts = assertReplace(funcWithBodyParts,/\([$a-zA-Z0-9_]{0,6}\?[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}:[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\)\.render\([$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6}\*[$a-zA-Z0-9_]{0,6}\),/,
-  '(flashSnakeStatus.currentlyFlashingSnake || checkboxes.checkboxStatuses.die) && $&');
 
-  funcWithBodyParts = assertReplace(funcWithBodyParts,/[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.fill\(\)\);/,
+  //Eat anim
+  funcWithBodyParts = assertReplace(funcWithBodyParts,/(\([$a-zA-Z0-9_]{0,6}\?[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}:[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\)\.render\(Math\.floor\([$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\),\n?[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6})(\);)/,
+  '(flashSnakeStatus.currentlyFlashingSnake || checkboxes.checkboxStatuses.eatAnimation) && $1 * snakeScale.face $2');
+
+  //Tongue
+  funcWithBodyParts = assertReplace(funcWithBodyParts,/(\([$a-zA-Z0-9_]{0,6}\?[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}:[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\)\.render\([$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6})(\)\)})/,
+  'checkboxes.checkboxStatuses.tongue && $1 * snakeScale.face $2');
+
+  //Die anim
+  funcWithBodyParts = assertReplace(funcWithBodyParts,/(\([$a-zA-Z0-9_]{0,6}\?[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}:[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\)\.render\([$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6}\*[$a-zA-Z0-9_]{0,6})(\),)/,
+  '(flashSnakeStatus.currentlyFlashingSnake || checkboxes.checkboxStatuses.die) && $1 * snakeScale.face $2');
+
+  //Snoot
+  funcWithBodyParts = assertReplace(funcWithBodyParts,/[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.fill\(\);/,
   '(flashSnakeStatus.currentlyFlashingSnake || checkboxes.checkboxStatuses.snoot) && $&');
+
+  //Snoot scale
+  funcWithBodyParts = assertReplace(funcWithBodyParts,/\.4/,'snakeScale.face * 0.4');
 
   eval(funcWithBodyParts);
 
@@ -412,80 +460,55 @@ let rightEyeRegex = /\([$a-zA-Z0-9_]{0,6}\?[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6
   //Fruit
   funcWithFruit = assertReplace(funcWithFruit,fruitRegex,
   'checkboxes.checkboxStatuses.fruit && $&');
-  
+
   //Poison mode fruit disappearing animation
-  funcWithFruit = assertReplace(funcWithFruit,/this\.[$a-zA-Z0-9_]{0,6}\.drawImage\(this\.[$a-zA-Z0-9_]{0,6}\[[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\]\.[$a-zA-Z0-9_]{0,6}\.canvas,0,0,128,128,-\(this\.[$a-zA-Z0-9_]{0,6}\/2\)\*[$a-zA-Z0-9_]{0,6},-\(this\.[$a-zA-Z0-9_]{0,6}\/2\)\*\n?[$a-zA-Z0-9_]{0,6},this\.[$a-zA-Z0-9_]{0,6}\*[$a-zA-Z0-9_]{0,6},this\.[$a-zA-Z0-9_]{0,6}\*[$a-zA-Z0-9_]{0,6}\)/,
+  funcWithFruit = assertReplace(funcWithFruit,/this\.[$a-zA-Z0-9_]{0,6}\.drawImage\([a-z],0,\n?0,\n?128,128,-\([a-z]\/2\),-\([a-z]\/2\),[a-z],[a-z]\)/,
     'checkboxes.checkboxStatuses.fruit && $&');
 
-  //Background for infinity is also contained in funcWithFruit
-  //For outer wall
-  funcWithFruit = assertReplace(funcWithFruit,/this\.context\.fillRect\(0,0,this\.context\.canvas\.width,this\.context\.canvas\.height\);/,
-  'checkboxes.checkboxStatuses.border && $&');
+  //For compatitibilty, also change this code for animatedSnakeColours
+  /*
+  //Commented out until I find a new way to do animated Snake Colours
+  funcWithFruit = assertReplaceAll(funcWithFruit,'"#578A34"', '((typeof animateSnakeGlobals !== "undefined" && animateSnakeGlobals.voice.isBorderSet) ? animateSnakeGlobals.voice.borderColour : "#578A34")');
+  */
 
-  //For light tiles (infinity)
-  funcWithFruit = assertReplace(funcWithFruit,/(?<="#AAD751";)this\.context\.fillRect\(0,0,this\.context\.canvas\.width,this\.context\.canvas\.height\);/,
-  'checkboxes.checkboxStatuses.lightTiles && $&');
-  
-  //For dark tiles (infinity)
-  funcWithFruit = assertReplace(funcWithFruit,/this\.context\.fillRect\([$a-zA-Z0-9_]{0,6}\*this\.[$a-zA-Z0-9_]{0,6}-[$a-zA-Z0-9_]{0,6}\.x\+[$a-zA-Z0-9_]{0,6}\.x,[$a-zA-Z0-9_]{0,6}\*this\.[$a-zA-Z0-9_]{0,6}-[$a-zA-Z0-9_]{0,6}\.y\+[$a-zA-Z0-9_]{0,6}\.y,this\.[$a-zA-Z0-9_]{0,6},this\.[$a-zA-Z0-9_]{0,6}\);/,
-  'checkboxes.checkboxStatuses.darkTiles && $&');
+  eval(funcWithFruit);
 
-  //Also has a canvas that we can delete to hide all but shadow
-  funcWithFruit = assertReplace(funcWithFruit,/this\.[$a-zA-Z0-9_]{0,6}\.drawImage\(this\.[$a-zA-Z0-9_]{0,6}\.canvas,[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6}\);if/,
-  'checkboxes.checkboxStatuses.allButShadow && $&');
-
-  //all but shadow, but only for infinity
-  funcWithFruit = assertReplace(funcWithFruit,/this\.context\.drawImage\(this\.[$a-zA-Z0-9_]{0,6}\.canvas,\n?[$a-zA-Z0-9_]{0,6}-[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6}-[$a-zA-Z0-9_]{0,6}\)}else/,
-  'checkboxes.checkboxStatuses.allButShadow && $&');
+  let funcWithRenderWall = findFunctionInCode(code,/[$a-zA-Z0-9_]{0,6}\.prototype\.render=function\(a\)$/,
+  /this\.[$a-zA-Z0-9_]{0,6}\.fillRect\([$a-zA-Z0-9_]{0,6}\.x-\n?[$a-zA-Z0-9_]{0,6}\/2,[$a-zA-Z0-9_]{0,6}\.y-[$a-zA-Z0-9_]{0,6}\/2,[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6}\)/,
+  deleteModDebug);
 
   //for walls/locks
-  funcWithFruit = assertReplace(funcWithFruit,/this\.[$a-zA-Z0-9_]{0,6}\.fillRect\([$a-zA-Z0-9_]{0,6}\.x-[$a-zA-Z0-9_]{0,6}\/2,[$a-zA-Z0-9_]{0,6}\.y-[$a-zA-Z0-9_]{0,6}\/2,[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6}\),/,
-  'checkboxes.checkboxStatuses.walls && $&');
-
-  //background for falling lock piece
-  funcWithFruit = assertReplace(funcWithFruit,/this\.[$a-zA-Z0-9_]{0,6}\.fillRect\(-\(this\.[$a-zA-Z0-9_]{0,6}\/2\)\*[$a-zA-Z0-9_]{0,6},-\(this\.[$a-zA-Z0-9_]{0,6}\/2\)\*[$a-zA-Z0-9_]{0,6},this\.[$a-zA-Z0-9_]{0,6}\*[$a-zA-Z0-9_]{0,6},this\.[$a-zA-Z0-9_]{0,6}\*[$a-zA-Z0-9_]{0,6}\)\),/,
+  funcWithRenderWall = assertReplace(funcWithRenderWall,/this\.[$a-zA-Z0-9_]{0,6}\.fillRect\([$a-zA-Z0-9_]{0,6}\.x-\n?[$a-zA-Z0-9_]{0,6}\/2,[$a-zA-Z0-9_]{0,6}\.y-[$a-zA-Z0-9_]{0,6}\/2,[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6}\)/,
   'checkboxes.checkboxStatuses.walls && $&');
 
   //lock icon
-  funcWithFruit = assertReplace(funcWithFruit,/this\.[$a-zA-Z0-9_]{0,6}\.drawImage\([$a-zA-Z0-9_]{0,6}\(this\.[$a-zA-Z0-9_]{0,6}\),128\*[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6},0,128,128,[$a-zA-Z0-9_]{0,6}\.x-[$a-zA-Z0-9_]{0,6}\/2,[$a-zA-Z0-9_]{0,6}\.y-[$a-zA-Z0-9_]{0,6}\/2,[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6}\)\);/,
+  funcWithRenderWall = assertReplace(funcWithRenderWall,/this\.[$a-zA-Z0-9_]{0,6}\.drawImage\(this\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.canvas,\n?128\*[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6},0,128,128,[a-z]\.x-[a-z]\/2,[a-z]\.y-[a-z]\/2,[a-z],[a-z]\)\)/,
   'checkboxes.checkboxStatuses.walls && $&');
 
-  //lock icon and sokoban icon falling
-  funcWithFruit = assertReplace(funcWithFruit,/(drawImage\([$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\?)([$a-zA-Z0-9_]{0,6}\(this\.[$a-zA-Z0-9_]{0,6}\)):([$a-zA-Z0-9_]{0,6}\(this\.[$a-zA-Z0-9_]{0,6}\))/,
-  '$1 (checkboxes.checkboxStatuses.walls ? $2 : new Image()) : (checkboxes.checkboxStatuses.sokobanBox ? $3 : new Image())');
-
-  //keys
-  funcWithFruit = assertReplace(funcWithFruit,/this\.[$a-zA-Z0-9_]{0,6}\.drawImage\([$a-zA-Z0-9_]{0,6}\(this\.[$a-zA-Z0-9_]{0,6}\),128\*[$a-zA-Z0-9_]{0,6}\.type,0,128,128,[$a-zA-Z0-9_]{0,6}\.x-[$a-zA-Z0-9_]{0,6}\/2,[$a-zA-Z0-9_]{0,6}\.y-[$a-zA-Z0-9_]{0,6}\/2,[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6}\),/,
-  'checkboxes.checkboxStatuses.keys && $&');
-
-  //keys upside down
-  funcWithFruit = assertReplace(funcWithFruit,/this\.[$a-zA-Z0-9_]{0,6}\.drawImage\([$a-zA-Z0-9_]{0,6}\(this\.[$a-zA-Z0-9_]{0,6}\),128\*[$a-zA-Z0-9_]{0,6}\.type,0,128,128,-\([$a-zA-Z0-9_]{0,6}\/2\),-\([$a-zA-Z0-9_]{0,6}\/2\),[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6}\),/,
-  'checkboxes.checkboxStatuses.keys && $&');
-  
-  eval(funcWithFruit);
+  eval(funcWithRenderWall);
 
   //Sokoban box
-  let funcWithSokoban = findFunctionInCode(code, /[$a-zA-Z0-9_]{0,6}=function\([$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6}\)$/,
-  /if\([$a-zA-Z0-9_]{0,6}\([$a-zA-Z0-9_]{0,6},7\)\){var [$a-zA-Z0-9_]{0,6}=new [$a-zA-Z0-9_]{0,6}\([$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.width\*[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}-[$a-zA-Z0-9_]{0,6}\.x,a\.[$a-zA-Z0-9_]{0,6}\.height\*a\.[$a-zA-Z0-9_]{0,6}-[$a-zA-Z0-9_]{0,6}\.y\);/,
+  let funcWithSokoban = findFunctionInCode(code, /[$a-zA-Z0-9_]{0,6}=function\([$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6}\)$/,
+  /[$a-zA-Z0-9_]{0,6}\([a-z]\.settings,7\)&&![a-z]&&\([a-z]=new [$a-zA-Z0-9_]{0,6}\([a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.width\*\n?[a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}-[a-z]\.x,[a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.height\*[a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}-\n?[a-z]\.y\),/,
   deleteModDebug);
 
   //Sokoban
-  funcWithSokoban = assertReplace(funcWithSokoban,/[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.drawImage\([$a-zA-Z0-9_]{0,6}\([$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\),128,0,128,128,[$a-zA-Z0-9_]{0,6}\.x-[$a-zA-Z0-9_]{0,6}\/2,[$a-zA-Z0-9_]{0,6}\.y-[$a-zA-Z0-9_]{0,6}\/2,[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6}\)/,
+  funcWithSokoban = assertReplace(funcWithSokoban,/[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.drawImage\([a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.canvas,128,0,128,\n?128,[$a-zA-Z0-9_]{0,6}\.x-[$a-zA-Z0-9_]{0,6}\/2,[$a-zA-Z0-9_]{0,6}\.y-[$a-zA-Z0-9_]{0,6}\/2,[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6}\)/,
   'checkboxes.checkboxStatuses.sokobanBox && $&');
 
   //Sokoban
-  funcWithSokoban = assertReplace(funcWithSokoban,/[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.drawImage\([$a-zA-Z0-9_]{0,6}\([$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\),0,0,128,128,[$a-zA-Z0-9_]{0,6}\.x-[$a-zA-Z0-9_]{0,6}\/2,[$a-zA-Z0-9_]{0,6}\.y-[$a-zA-Z0-9_]{0,6}\/2,[$a-zA-Z0-9_]{0,6},\n?[$a-zA-Z0-9_]{0,6}\)/,
+  funcWithSokoban = assertReplace(funcWithSokoban,/[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.drawImage\([a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.canvas,0,0,128,128,[$a-zA-Z0-9_]{0,6}\.x-[$a-zA-Z0-9_]{0,6}\/2,[$a-zA-Z0-9_]{0,6}\.y-[$a-zA-Z0-9_]{0,6}\/2,[$a-zA-Z0-9_]{0,6},\n?[$a-zA-Z0-9_]{0,6}\)/,
   'checkboxes.checkboxStatuses.sokobanBox && $&');
 
   eval(funcWithSokoban);
 
   //Sokoban goal func
-  let funcWithSokobanGoal = findFunctionInCode(code, /[$a-zA-Z0-9_]{0,6}=function\([$a-zA-Z0-9_]{0,6}\)$/,
-  /[$a-zA-Z0-9_]{0,6}=2\+\([$a-zA-Z0-9_]{0,6}\.x\+[$a-zA-Z0-9_]{0,6}\.y\)%2\+\(2===a\.[$a-zA-Z0-9_]{0,6}\?2:0\);/,
+  let funcWithSokobanGoal = findFunctionInCode(code, /[$a-zA-Z0-9_]{0,6}=function\(a,b,c,d,e\)$/,
+  /[a-z]\.[$a-zA-Z0-9_]{0,6}\.drawImage\([a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.canvas,128\*[a-z],0,128,128,[a-z]\.x-[a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\/2\+[a-z],[a-z]\.y-[a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\/2\+[a-z],[a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6},[a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\)/,
   deleteModDebug);
 
   //Sokoban goal
-  funcWithSokobanGoal = assertReplaceAll(funcWithSokobanGoal,/[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.drawImage/g,
+  funcWithSokobanGoal = assertReplace(funcWithSokobanGoal,/[a-z]\.[$a-zA-Z0-9_]{0,6}\.drawImage\([a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.canvas,128\*[a-z],0,128,128,[a-z]\.x-[a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\/2\+[a-z],[a-z]\.y-[a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\/2\+[a-z],[a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6},[a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\)/,
   'checkboxes.checkboxStatuses.sokobanGoal && $&');
 
   eval(funcWithSokobanGoal);
@@ -499,19 +522,74 @@ let rightEyeRegex = /\([$a-zA-Z0-9_]{0,6}\?[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6
 
   //Normal background (i.e not on infinity)
 
-  let funcWithBackground = findFunctionInCode(code, /[$a-zA-Z0-9_]{0,6}\.prototype\.[$a-zA-Z0-9_]{0,6}=function\(\)$/,
-    /[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.fillStyle="#AAD751";[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.fillRect\(0,0,[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.width,[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.height\);/,
-    deleteModDebug);
+  let funcWithBackground = findFunctionInCode(code, /[$a-zA-Z0-9_]{0,6}=function\(a\)$/,
+  /0\);[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.fillRect\(0,0,[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.canvas\.width,\n?[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.canvas\.height\);/,
+  deleteModDebug);
 
-  funcWithBackground = assertReplace(funcWithBackground,/[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.fillRect\(0,0,[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.width,[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.height\);/,
+  funcWithBackground = assertReplace(funcWithBackground,/[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.fillRect\(0,0,[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.canvas\.width,\n?[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.canvas\.height\);/,
   'if(checkboxes.checkboxStatuses.lightTiles){$&}');
 
-  funcWithBackground = assertReplace(funcWithBackground,/[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.fillRect\([$a-zA-Z0-9_]{0,6}\*[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6}\*[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\)/,
+  funcWithBackground = assertReplace(funcWithBackground,/[a-z]\.[$a-zA-Z0-9_]{0,6}\.fillRect\([a-z]\*[a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6},[a-z]\*[a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6},[a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6},[a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\)/,
   'checkboxes.checkboxStatuses.darkTiles && $&');
 
   eval(funcWithBackground);
 
-  let funcWithBodyLines = findFunctionInCode(code, /[$a-zA-Z0-9_]{0,6}=function\(a,b,c\)$/,
+  let funcWithMiscRendering = findFunctionInCode(code,/[$a-zA-Z0-9_]{0,6}\.prototype.render=function\(a,b\)$/,
+    /(?<=0\);)[a-z]\.context\.fillRect\(0,0,[a-z]\.context\.canvas\.width,[a-z]\.context\.canvas\.height\);/,
+    deleteModDebug);
+
+  //Background for infinity is also contained in funcWithFruit
+  //For outer wall
+  funcWithMiscRendering = assertReplace(funcWithMiscRendering,/this\.context\.fillRect\(0,0,this\.context\.canvas\.width,this\.context\.canvas\.height\);/,
+  'checkboxes.checkboxStatuses.border && $&');
+
+  //For light tiles (infinity)
+  funcWithMiscRendering = assertReplace(funcWithMiscRendering,/(?<=0\);)[a-z]\.context\.fillRect\(0,0,[a-z]\.context\.canvas\.width,[a-z]\.context\.canvas\.height\);/,
+  'checkboxes.checkboxStatuses.lightTiles && $&');
+
+  //For dark tiles (infinity)
+  funcWithMiscRendering = assertReplace(funcWithMiscRendering,/[a-z]\.context\.fillRect\([a-z]\*[a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}-[a-z]\.x\+[a-z]\.x,[a-z]\*[a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}-[a-z]\.y\+[a-z]\.y,[a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6},[a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\);/,
+  'checkboxes.checkboxStatuses.darkTiles && $&');
+
+  //Also has a canvas that we can delete to hide all but shadow
+  funcWithMiscRendering = assertReplace(funcWithMiscRendering,/this\.[$a-zA-Z0-9_]{0,6}\.drawImage\(this\.[$a-zA-Z0-9_]{0,6}\.canvas,\n?[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6}\);if/,
+  'checkboxes.checkboxStatuses.allButShadow && $&');
+
+  //all but shadow, but only for infinity
+  funcWithMiscRendering = assertReplace(funcWithMiscRendering,/this\.context\.drawImage\(this\.[$a-zA-Z0-9_]{0,6}\.canvas,\n?[$a-zA-Z0-9_]{0,6}-[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6}-[$a-zA-Z0-9_]{0,6}\)}else/,
+  'checkboxes.checkboxStatuses.allButShadow && $&');
+
+  eval(funcWithMiscRendering);
+
+  let funcWithLockRendering = findFunctionInCode(code,/[$a-zA-Z0-9_]{0,6}\.prototype\.render=function\(\)$/,
+  /this\.[$a-zA-Z0-9_]{0,6}.save\(\),this\.[$a-zA-Z0-9_]{0,6}\.translate\([a-z],[a-z]\),this\.[$a-zA-Z0-9_]{0,6}\.rotate\([a-z]\),/,
+  false);
+
+  //background for falling lock piece
+  funcWithLockRendering = assertReplace(funcWithLockRendering,/this\.[$a-zA-Z0-9_]{0,6}\.fillRect\(-\(this\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\/2\)\*[$a-zA-Z0-9_]{0,6},-\(this\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\/2\)\*[$a-zA-Z0-9_]{0,6},this\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\*[$a-zA-Z0-9_]{0,6},this\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\*\n?[$a-zA-Z0-9_]{0,6}\)\)/,
+  'checkboxes.checkboxStatuses.walls && $&');
+
+  //lock icon and sokoban icon falling
+  funcWithLockRendering = assertReplace(funcWithLockRendering,/(drawImage\(0===[a-z]\.type\?)(this\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.canvas):\n?(this\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.canvas)/,
+  '$1 (checkboxes.checkboxStatuses.walls ? $2 : new Image()) : (checkboxes.checkboxStatuses.sokobanBox ? $3 : new Image())');
+
+  eval(funcWithLockRendering);
+
+  let funcWithKeyRendering = findFunctionInCode(code,/[$a-zA-Z0-9_]{0,6}\.prototype\.render=function\(a\)$/,
+  /this\.[$a-zA-Z0-9_]{0,6}\.drawImage\(this\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.canvas,\n?128\*[a-z]\.type,0,128,128,[a-z]\.x-[a-z]\/2,[a-z]\.y-[a-z]\/2,[a-z],[a-z]\);/,
+  deleteModDebug);
+
+  //keys
+  funcWithKeyRendering = assertReplace(funcWithKeyRendering,/this\.[$a-zA-Z0-9_]{0,6}\.drawImage\(this\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.canvas,\n?128\*[a-z]\.type,0,128,128,[a-z]\.x-[a-z]\/2,[a-z]\.y-[a-z]\/2,[a-z],[a-z]\)/,
+  'checkboxes.checkboxStatuses.keys && $&');
+
+  //keys upside down
+  funcWithKeyRendering = assertReplace(funcWithKeyRendering,/this\.[$a-zA-Z0-9_]{0,6}\.drawImage\(this\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.canvas,128\*[a-z]\.type,0,128,128,-\([a-z]\/2\),-\([a-z]\/2\),[a-z],[a-z]\),/,
+  'checkboxes.checkboxStatuses.keys && $&');
+
+  eval(funcWithKeyRendering);
+
+  let funcWithBodyLines = findFunctionInCode(code, /[$a-zA-Z0-9_]{0,6}\.prototype\.render=function\(a,b,c\)$/,
   /quadraticCurveTo/,
   deleteModDebug);
 
@@ -521,13 +599,17 @@ let rightEyeRegex = /\([$a-zA-Z0-9_]{0,6}\?[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6
   funcWithBodyLines = assertReplaceAll(funcWithBodyLines,/[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.lineTo\([$a-zA-Z0-9_]{0,6}\.x,[$a-zA-Z0-9_]{0,6}\.y\)/g,
   '(flashSnakeStatus.currentlyFlashingSnake || checkboxes.checkboxStatuses.body) && $&');
 
-  funcWithBodyLines = assertReplaceAll(funcWithBodyLines,/[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.quadraticCurveTo\([$a-zA-Z0-9_]{0,6}\.x,[$a-zA-Z0-9_]{0,6}\.y,[$a-zA-Z0-9_]{0,6}\.x,[$a-zA-Z0-9_]{0,6}\.y\)\)/g,
+  funcWithBodyLines = assertReplaceAll(funcWithBodyLines,/[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.quadraticCurveTo\([$a-zA-Z0-9_]{0,6}\.x,[$a-zA-Z0-9_]{0,6}\.y,[$a-zA-Z0-9_]{0,6}\.x,[$a-zA-Z0-9_]{0,6}\.y\)/g,
   '(flashSnakeStatus.currentlyFlashingSnake || checkboxes.checkboxStatuses.body) && $&');
+
+  //Body scale
+  funcWithBodyLines = assertReplace(funcWithBodyLines,/\.8/,'(snakeScale.tailStart * 0.8)');
+  funcWithBodyLines = assertReplace(funcWithBodyLines,/\.4/,'(snakeScale.tailEnd * 0.4)');
 
   eval(funcWithBodyLines);
 
   //Portals
-  let funcWithPortals = findFunctionInCode(code, /[$a-zA-Z0-9_]{0,6}=function\(a,b,\n?c\)$/,
+  let funcWithPortals = findFunctionInCode(code, /[$a-zA-Z0-9_]{0,6}\.prototype\.render=function\(a\)$/,
   /[$a-zA-Z0-9_]{0,6}=new [$a-zA-Z0-9_]{0,6}\([$a-zA-Z0-9_]{0,6}\*Math\.cos\(2\*[$a-zA-Z0-9_]{0,6}\*Math\.PI\),[$a-zA-Z0-9_]{0,6}\*Math\.sin\(2\*[$a-zA-Z0-9_]{0,6}\*Math\.PI\)\);/,
   deleteModDebug);
 
@@ -536,15 +618,23 @@ let rightEyeRegex = /\([$a-zA-Z0-9_]{0,6}\?[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6
 
   eval(funcWithPortals);
 
+  let mainClass = code.match(/([$a-zA-Z0-9_]{0,6})=function\(a,b,c\){this\.settings=[a-z];this\.menu=[a-z];this\.header=[a-z];/)[1];
+
   //For flashing snake body when we eat an apple
-  let funcWithEat = findFunctionInCode(code, /[$a-zA-Z0-9_]{0,6}\.prototype\.update=function\(\)$/,
-  /if\([$a-zA-Z0-9_]{0,6}\|\|[$a-zA-Z0-9_]{0,6}\){[$a-zA-Z0-9_]{0,6}=[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6};[$a-zA-Z0-9_]{0,6}\|\|\([$a-zA-Z0-9_]{0,6}\?\([$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.play\(\)/,
+  let funcWithEat = findFunctionInCode(code, /[$a-zA-Z0-9_]{0,6}\.tick=function\(\)$/,
+  /if\([$a-zA-Z0-9_]{0,6}\|\|[$a-zA-Z0-9_]{0,6}\){var [$a-zA-Z0-9_]{0,6}=\n?[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6};[$a-zA-Z0-9_]{0,6}\|\|\([$a-zA-Z0-9_]{0,6}=!0,[$a-zA-Z0-9_]{0,6}\?[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.play\(\)/,
   deleteModDebug);
 
   funcWithEat = assertReplace(funcWithEat,/if\([$a-zA-Z0-9_]{0,6}\|\|[$a-zA-Z0-9_]{0,6}\){/,
   '$& checkboxes.checkboxStatuses.flashSnake && brieflyShowSnake();');
 
+  funcWithEat = swapInMainClassPrototype(mainClass, funcWithEat);
   eval(funcWithEat);
+}
+
+function swapInMainClassPrototype(mainClass, functionText) {
+  functionText = assertReplace(functionText, /^[$a-zA-Z0-9_]{0,6}/,`${mainClass}.prototype`);
+  return functionText;
 }
 
 /*
@@ -559,32 +649,37 @@ then put functionSignature = /[$a-zA-Z0-9_]{0,6}=function\(a,b,c,d,e\)$/
 somethingInsideFunction will be regex matching something in the function
 for example if we are trying to find a function like s_xD = function(a, b, c, d, e) {...a.Xa&&10!==a.Qb...}
 then put somethingInsideFunction = /a\.[$a-zA-Z0-9_]{0,6}&&10!==a\.[$a-zA-Z0-9_]{0,6}/
-
-levelsToGoUp tells us how many "layers" of curly brackets we need to go up before we get to our function
-
 */
 function findFunctionInCode(code, functionSignature, somethingInsideFunction, logging = false) {
+  let functionSignatureSource = functionSignature.source;
+  let functionSignatureFlags = functionSignature.flags;//Probably empty string
+
   /*Check functionSignature ends in $*/
-  if(functionSignature.toString()[functionSignature.toString().length-2] !== "$") {
+  if (functionSignatureSource[functionSignatureSource.length - 1] !== "$") {
     throw new Error("functionSignature regex should end in $");
   }
 
+  /*Allow line breaks after commas or =. This is bit sketchy, but should be ok as findFunctionInCode is used in a quite limited way*/
+  functionSignatureSource.replaceAll(/,|=/g,'$&\\n?');
+  functionSignature = new RegExp(functionSignatureSource, functionSignatureFlags);
+
   /*get the position of somethingInsideFunction*/
   let indexWithinFunction = code.search(somethingInsideFunction);
-  if(indexWithinFunction == -1) {
-    throw new Error("couldn't find a match for somethingInsideFunction");
+  if (indexWithinFunction == -1) {
+    console.log("%cCouldn't find a match for somethingInsideFunction", "color:red;");
+    diagnoseRegexError(code, somethingInsideFunction);
   }
 
   /*expand outwards from somethingInsideFunction until we get to the function signature, then count brackets
   to find the end of the function*/
   startIndex = 0;
-  for(let i = indexWithinFunction; i >= 0; i--) {
-    let startOfCode = code.substring(0,i);
+  for (let i = indexWithinFunction; i >= 0; i--) {
+    let startOfCode = code.substring(0, i);
     startIndex = startOfCode.search(functionSignature);
-    if(startIndex !== -1) {
+    if (startIndex !== -1) {
       break;
     }
-    if(i == 0) {
+    if (i == 0) {
       throw new Error("Couldn't find function signature");
     }
   }
@@ -594,35 +689,35 @@ function findFunctionInCode(code, functionSignature, somethingInsideFunction, lo
   let endIndex = 0;
   /*Use bracket counting to find the whole function*/
   let codeLength = code.length;
-  for(let i = startIndex; i<=codeLength; i++){
-    if(!foundFirstBracket && code[i] == "{") {
+  for (let i = startIndex; i <= codeLength; i++) {
+    if (!foundFirstBracket && code[i] == "{") {
       foundFirstBracket = true;
     }
 
-    if(code[i] == "{") {
+    if (code[i] == "{") {
       bracketCount++;
     }
-    if(code[i] == "}") {
+    if (code[i] == "}") {
       bracketCount--;
     }
-    if(foundFirstBracket && bracketCount == 0) {
+    if (foundFirstBracket && bracketCount == 0) {
       endIndex = i;
       break;
     }
 
-    if(i == codeLength) {
+    if (i == codeLength) {
       throw new Error("Couldn't pair up brackets");
     }
   }
-  
-  let fullFunction = code.substring(startIndex,endIndex + 1);
+
+  let fullFunction = code.substring(startIndex, endIndex + 1);
 
   /*throw error if fullFunction doesn't contain something inside function - i.e. function signature was wrong*/
-  if(fullFunction.search(somethingInsideFunction) === -1) {
+  if (fullFunction.search(somethingInsideFunction) === -1) {
     throw new Error("Function signature does not belong to the same function as somethingInsideFunction");
   }
 
-  if(logging) {
+  if (logging) {
     console.log(fullFunction);
   }
 
@@ -633,13 +728,14 @@ function findFunctionInCode(code, functionSignature, somethingInsideFunction, lo
 Same as replace, but throws an error if nothing is changed
 */
 function assertReplace(baseText, regex, replacement) {
-  if(typeof baseText !== 'string') {
+  if (typeof baseText !== 'string') {
     throw new Error('String argument expected for assertReplace');
   }
   let outputText = baseText.replace(regex, replacement);
 
-  if(baseText === outputText) {
-    throw new Error('Failed to make any changes with replace');
+  //Throw warning if nothing is replaced
+  if (baseText === outputText) {
+    diagnoseRegexError(baseText, regex);
   }
 
   return outputText;
@@ -649,16 +745,63 @@ function assertReplace(baseText, regex, replacement) {
 Same as replaceAll, but throws an error if nothing is changed
 */
 function assertReplaceAll(baseText, regex, replacement) {
-  if(typeof baseText !== 'string') {
+  if (typeof baseText !== 'string') {
     throw new Error('String argument expected for assertReplace');
   }
   let outputText = baseText.replaceAll(regex, replacement);
 
-  if(baseText === outputText) {
-    throw new Error('Failed to make any changes with replace');
+  //Throw warning if nothing is replaced
+  if (baseText === outputText) {
+    diagnoseRegexError(baseText, regex);
   }
 
   return outputText;
+}
+
+function diagnoseRegexError(baseText, regex) {  
+  if(!(regex instanceof RegExp)) {
+    throw new Error('Failed to find match using string argument. No more details available');
+  }
+
+  //see if removing line breaks works - in that case we can give a more useful error message
+  let oneLineText = baseText.replaceAll(/\n/g,'');
+  let res = regex.test(oneLineText);
+
+  //If line breaks don't solve the issue then throw a general error
+  if (!res) {
+    throw new Error('Failed to find match for regex.');
+  }
+
+  //Try to suggest correct regex to use for searching
+  let regexSource = regex.source;
+  let regexFlags = regex.flags;
+
+  //Look at all the spots where line breaks might occur and try adding \n? there to see if it makes a difference
+  //It might be easier to just crudely brute force putting \n? at each possible index?
+  for(let breakableChar of ["%","&","\\*","\\+",",","-","\\/",":",";","<","=",">","\\?","{","\\|","}"]) {
+    for(let pos = regexSource.indexOf(breakableChar); pos !== -1; pos = regexSource.indexOf(breakableChar, pos + 1)) {
+      //Remake the regex with a new line at the candidate position
+      let candidateRegexSource = `${regexSource.slice(0,pos + breakableChar.length)}\\n?${regexSource.slice(pos + breakableChar.length)}`;
+      let candidateRegex;
+      
+      try{
+        candidateRegex = new RegExp(candidateRegexSource, regexFlags);
+      } catch(err) {
+        continue;
+      }
+
+      //See if the new regex works
+      let testReplaceResult = candidateRegex.test(baseText);
+      if(testReplaceResult) {
+        //Success we found the working regex! Give descriptive error message to user and log suggested regex with new line in correct place
+        console.log(`Suggested regex improvement:
+${candidateRegex}`);
+        throw new Error('Suggested improvement found! Error with line break, failed to find match for regex. See logged output for regex to use instead that should hopefully fix this.');
+      }
+    }
+  }
+
+  throw new Error('Line break error! Failed to failed to find match for regex - most likely caused by a new line break. No suggestions provided');
 }
 
 snake.deleteStuffMod();
