@@ -1,806 +1,640 @@
-//Change to false when releasing - turns on console.log printing
-let deleteModDebug = false;
-
-let checkboxes = {
-  checkboxStatuses: {leftEye:true,rightEye:true,body:true,snoot:true,lightTiles:true,darkTiles:true,eatAnimation:true,fruit:true,shadow:true,border:true,die:true,lumps:true,portals:true,flashSnake:false,allButShadow:true,keys:true,walls:true,sokobanBox:true,sokobanGoal:true},
-};
-
-let flashSnakeStatus = {flashCount:0, currentlyFlashingSnake:false, durationMillisecond:1000};
-
-var snakeScale = {tailStart: 1,tailEnd: 1,face: 1,eyes: 1};
-
-let dragHandler = {
-  dragItem:null,
-  dragContainer:null,
-  dragObject:null,
-  active:false,
-  currentX:0,
-  currentY:0,
-  initialX:0,
-  initialY:0,
-  xOffset:0,
-  yOffset:0,
-  dragStart:(e) => {
-    if (e.target === dragHandler.dragItem) {
-      dragHandler.initialX = e.clientX - dragHandler.xOffset;
-      dragHandler.initialY = e.clientY - dragHandler.yOffset;
-      dragHandler.active = true;
-    }
-  },
-  dragEnd:(e) => {
-    dragHandler.initialX = dragHandler.currentX;
-    dragHandler.initialY = dragHandler.currentY;
-    dragHandler.active = false;
-  },
-  drag:(e) => {
-    if (dragHandler.active) {
-      
-      //Enforce coordinates being within viewport
-      let restrictedClientX = Math.max(Math.min(e.clientX,window.innerWidth - 5),5);
-      let restrictedClientY = Math.max(Math.min(e.clientY,window.innerHeight - 5),5);
-
-      e.preventDefault();
-      dragHandler.currentX = restrictedClientX - dragHandler.initialX;
-      dragHandler.currentY = restrictedClientY - dragHandler.initialY;
-      dragHandler.xOffset = dragHandler.currentX;
-      dragHandler.yOffset = dragHandler.currentY;
-
-      dragHandler.setTranslate(dragHandler.currentX, dragHandler.currentY, dragHandler.dragObject);
-    }
-  },
-  setTranslate:function(xPos, yPos, el) {
-    el.style.transform = "translate3d(" + xPos + "px, " + yPos + "px, 0)";
-  },
-  initialiseDragHandler: function() {
-    this.dragItem = document.getElementById('drag-handle');
-    this.dragContainer = window;
-    this.dragObject = document.getElementById('delete-stuff-draggable');
-
-    //If it isn't fbx snake, then start at the left edge
-    if(!/fbx\?fbx=snake_arcade/.test(document.location.href)) {
-      this.dragObject.style.left = '5px';
-    }
-
-    this.dragContainer.addEventListener("mousedown", this.dragStart, false);
-    this.dragContainer.addEventListener("mouseup", this.dragEnd, false);
-    this.dragContainer.addEventListener("mousemove", this.drag, false);
-  }
-};
-
-function setupEventListeners() {
-  document.getElementById('delete-stuff-close').onclick = function() {
-    document.getElementById('delete-stuff-popup').hidden = true;
-  };
-
-  document.addEventListener('keydown',function(event) {
-    if(event.key == 'i') {
-      document.getElementById('delete-stuff-popup').hidden = !document.getElementById('delete-stuff-popup').hidden;
-    }
-  });
+window.snake.more_menu = function() {
+  window.snake_scheme_epic_cool = window.snake_scheme_epic_cool || { light_squares: '#AAD751', dark_squares:  '#A2D149' };
+  window.snake_scheme_epic_cool = window.snake_scheme_epic_cool || { light_squares: '#AAD751', dark_squares:  '#A2D149' };
   
-  document.getElementById('left-eye').onchange = function() {
-    checkboxes.checkboxStatuses.leftEye = this.checked;
-  }
   
-  document.getElementById('left-eye').onchange = function() {
-    checkboxes.checkboxStatuses.leftEye = this.checked;
-  }
+  // micro
+  let img = new Image;
+  img.src = 'https://github.com/carlgustavh/GoogleSnakeCustomMenuStuffImages/blob/main/Micro.png?raw=true';
+  img.width = 47;
+  img.height = 47;
+  document.querySelector('#size').appendChild(img);
 
-  document.getElementById('gay guy').onchange = function() {
-    checkboxes.checkboxStatuses.rightEye = this.checked;
-  }
+  // tiny
+  img = new Image;
+  img.src = 'https://github.com/carlgustavh/GoogleSnakeCustomMenuStuffImages/blob/main/Tiny.png?raw=true';
+  img.width = 47;
+  img.height = 47;
+  document.querySelector('#size').appendChild(img);
 
-  document.getElementById('snake-body').onchange = function() {
-    checkboxes.checkboxStatuses.body = this.checked;
-  }
+  // between small & standard
+  img = new Image;
+  img.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAC8AAAAvCAYAAABzJ5OsAAABYElEQVRoQ+2Y2w7DIAxD1///6E2VRsUYJXZuFIm9AuHEMSzleC38OxZmf214oXrvZtxNMEugAtWL0QLX/JY9f3SwBGLgz31G81VHLwq+B1NXw7LvFdsSRKOkZs1tVTY8aNilbeNqmVOwTNssC+9umUzl3VXf8OC5WVb5EL9n2CYMPBPeciVPaw9CvF6ysSiCgIV9iFhtg7Q0oR8lFuUR+HrOKBGVEzLh3ROZBS99aUGWfhI8a0NTS0xv5r1ghvLIFQvl+SR4OikGvhec3XDU67CxKM+3wTVNF/JQBQsKT6xevMo1RislvJrR8Rj4E7r3L8nEmKZ8D54Br9ePHmfhmPDE792l8Xm59qS1qbbRJn63LhQ+w+9QT6NpQe9aWrQCroeVybL1q+TfUdfoclg18PXGjEelZJlYlzBoyaFGaTBJgpPGu6E3PFAWSVlp/NHKA/n/T8myjQpOWrThJYWixj+UTlgwJgIXFAAAAABJRU5ErkJggg==';
+  img.width = img.height = 47;
+  document.querySelector('#size').appendChild(img);
 
-  document.getElementById('snoot').onchange = function() {
-    checkboxes.checkboxStatuses.snoot = this.checked;
-  }
+  // super big
+  img = new Image;
+  img.src = 'https://github.com/carlgustavh/GoogleSnakeCustomMenuStuffImages/blob/main/Super%20Big.png?raw=true';
+  img.width = 47;
+  img.height = 47;
+  document.querySelector('#size').appendChild(img);
 
-  document.getElementById('light-tiles').onchange = function() {
-    checkboxes.checkboxStatuses.lightTiles = this.checked;
-  }
+  // ultra big
+  img = new Image;
+  img.src = 'https://github.com/carlgustavh/GoogleSnakeCustomMenuStuffImages/blob/main/Too%20Big.png?raw=true';
+  img.width = 47;
+  img.height = 47;
+  document.querySelector('#size').appendChild(img);
 
-  document.getElementById('dark-tiles').onchange = function() {
-    checkboxes.checkboxStatuses.darkTiles = this.checked;
-  }
+  // humongous
+  img = new Image;
+  img.src = 'https://github.com/carlgustavh/GoogleSnakeCustomMenuStuffImages/blob/main/Humongous.png?raw=true';
+  img.width = 47;
+  img.height = 47;
+  document.querySelector('#size').appendChild(img);
 
-  document.getElementById('eat-animation').onchange = function() {
-    checkboxes.checkboxStatuses.eatAnimation = this.checked;
-  }
+  // too big
+  img = new Image;
+  img.src = 'https://github.com/carlgustavh/GoogleSnakeCustomMenuStuffImages/blob/main/Too%20Big.png?raw=true';
+  img.width = 47;
+  img.height = 47;
+  document.querySelector('#size').appendChild(img);
 
-  document.getElementById('tongue').onchange = function() {
-    checkboxes.checkboxStatuses.tongue = this.checked;
-  }
-  document.getElementById('fruit').onchange = function() {
-    checkboxes.checkboxStatuses.fruit = this.checked;
-  }
-  document.getElementById('shadow').onchange = function() {
-    checkboxes.checkboxStatuses.shadow = this.checked;
-  }
-  document.getElementById('border').onchange = function() {
-    checkboxes.checkboxStatuses.border = this.checked;
-  }
-  document.getElementById('die').onchange = function() {
-    checkboxes.checkboxStatuses.die = this.checked;
-  }
-  document.getElementById('lumps').onchange = function() {
-    checkboxes.checkboxStatuses.lumps = this.checked;
-  }
-  document.getElementById('portals').onchange = function() {
-    checkboxes.checkboxStatuses.portals = this.checked;
-  }
-  document.getElementById('flash-snake').onchange = function() {
-    checkboxes.checkboxStatuses.flashSnake = this.checked;
-  }
-  //Handle dropdown for controlling duration of snake flashes
-  document.getElementById('flash-snake-timing').onchange = function() {
-    flashSnakeStatus.durationMillisecond = this.value;
-  }
-  document.getElementById('all-but-shadow').onchange = function() {
-    checkboxes.checkboxStatuses.allButShadow = this.checked;
-  }
-  document.getElementById('keys').onchange = function() {
-    checkboxes.checkboxStatuses.keys = this.checked;
-  }
-  document.getElementById('walls').onchange = function() {
-    checkboxes.checkboxStatuses.walls = this.checked;
-  }
-  document.getElementById('sokoban-box').onchange = function() {
-    checkboxes.checkboxStatuses.sokobanBox = this.checked;
-  }
-  document.getElementById('sokoban-goal').onchange = function() {
-    checkboxes.checkboxStatuses.sokobanGoal = this.checked;
-  }
-  document.getElementById('spin').onchange = spinHandler;
-}
+  // too big
+  img = new Image;
+  img.src = 'https://github.com/carlgustavh/GoogleSnakeCustomMenuStuffImages/blob/main/Way%20Too%20Big.png?raw=true';
+  img.width = 47;
+  img.height = 47;
+  document.querySelector('#size').appendChild(img);
 
-function injectInitialHtml() {
-  let initialHtml = 
-  `<div id="delete-stuff-popup" style="margin:0px;position:fixed;z-index:9001;width:100%;">
-  <div id="delete-stuff-draggable" style="width:320px;background-color:khaki;z-index:9002;border-color:saddlebrown;border-style:solid;border-width:4px; border-radius:10px;box-shadow: 0 3px 10px rgba(0,0,0,0.4);position:fixed;left:600px;top:5px">
-    <div id="drag-handle" style="width:22px;height:22px;background-color: #fff5d4;position:absolute;border-top-left-radius:4px;border-bottom-right-radius:18px;border-right:3px solid saddlebrown;border-bottom:3px solid saddlebrown;cursor:move"></div>
-    <div style="padding:10px;width:300px;margin:0;">
-      <div style="text-align:center;padding:5px;background-color:darkkhaki;color:black;font-family:impact;font-size:20px">Mod made by Tristan M</div>
-      <div style="background-color:darkkhaki;margin-top:5px;padding:0px;padding-bottom:10px;font-family:impact;color:saddlebrown">
-        <!--Begin test area-->
-        <!--Snake body Section-->
-        <div style="box-sizing: border-box;padding:5px;margin: 0px;width: 50%;display:inline-block;float:left">
-          <ul style="list-style-type: none;padding:5px;margin-top:0;margin-bottom:0">
-            <li>
-              <label><input id="left-eye" type="checkbox" checked>Left Eye</label>
-            </li>
-            <li>
-              <label><input id="right-eye" type="checkbox" checked>Right Eye</label>
-            </li>
-            <li>
-              <label><input id="snoot" type="checkbox" checked>Snoot</label>
-            </li>
-            <li>
-              <label><input id="snake-body" type="checkbox" checked>Body</label>
-            </li>
-            <li>
-              <label><input id="lumps" type="checkbox" checked>Lumps</label>
-            </li>
-          </ul>
-        </div>
-        <div style="box-sizing: border-box;padding:5px;margin: 0px;width: 50%;display:inline-block;float:right;">
-          <ul style="list-style-type: none;padding:5px;margin-top:0;margin-bottom:0">
-            <li>
-              <label><input id="eat-animation" type="checkbox" checked>Eat Anim.</label>
-            </li>
-            <li>
-              <label><input id="tongue" type="checkbox" checked>Tongue</label>
-            </li>
-            <li>
-              <label><input id="die" type="checkbox" checked>Die Anim.</label>
-            </li>
-            <li>
-              <label><input id="shadow" type="checkbox" checked>Shadow</label>
-            </li>
-            <li>
-              <label><input id="all-but-shadow" type="checkbox" checked>Not Shadow</label>
-            </li>
-          </ul>
-        </div>
-        <hr style="clear:both;width:90%;margin-bottom:0">
-        <!--Background Section-->
-        <div style="box-sizing: border-box;padding:5px;margin: 0px;width: 50%;display:inline-block;float:left">
-          <ul style="list-style-type: none;padding:5px;margin-top:0;margin-bottom:0">
-            <li>
-              <label><input id="light-tiles" type="checkbox" checked>Light Tiles</label>
-            </li>
-            <li>
-              <label><input id="dark-tiles" type="checkbox" checked>Dark Tiles</label>
-            </li>
-          </ul>
-        </div>
-        <div style="box-sizing: border-box;padding:5px;margin: 0px;width: 50%;display:inline-block;float:right;">
-          <ul style="list-style-type: none;padding:5px;margin-top:0;margin-bottom:0">
-            <li>
-              <label><input id="border" type="checkbox" checked>Border</label>
-            </li>
-            <li>
-              <label><input id="spin" type="checkbox">???</label>
-            </li>
-          </ul>
-        </div>
-        <hr style="clear:both;width:90%;margin-bottom:0">
-        <!--Fruits Section-->
-        <div style="box-sizing: border-box;padding:5px;margin: 0px;width: 50%;display:inline-block;float:left">
-          <ul style="list-style-type: none;padding:5px;margin-top:0;margin-bottom:0">
-            <li>
-              <label><input id="fruit" type="checkbox" checked>Fruit</label>
-            </li>
-            <li>
-              <label><input id="portals" type="checkbox" checked>Portals</label>
-            </li>
-            <li>
-              <label><input id="keys" type="checkbox" checked>Keys</label>
-            </li>
-          </ul>
-        </div>
-        <div style="box-sizing: border-box;padding:5px;margin: 0px;width: 50%;display:inline-block;float:right;">
-          <ul style="list-style-type: none;padding:5px;margin-top:0;margin-bottom:0">
-            <li>
-              <label><input id="walls" type="checkbox" checked>Walls/Locks</label>
-            </li>
-            <li>
-              <label><input id="sokoban-box" type="checkbox" checked>Sokoban box</label>
-            </li>
-            <li>
-              <label><input id="sokoban-goal" type="checkbox" checked>Sokoban goal</label>
-            </li>
-          </ul>
-        </div>
-        <hr style="clear:both;width:90%;margin-bottom:0">
-        <!--Flash Section-->
-        <div style="box-sizing: border-box;padding:5px;margin: 0px;width: 50%;display:inline-block;float:left">
-          <ul style="list-style-type: none;padding:5px;margin-top:0;margin-bottom:0">
-            <li>
-              <label><input id="flash-snake" type="checkbox">Flash on eat</label>
-            </li>  
-          </ul>
-        </div>
-        <div style="box-sizing: border-box;padding:5px;margin: 0px;width: 50%;display:inline-block;float:right;">
-          <ul style="list-style-type: none;padding:5px;margin-top:0;margin-bottom:0">
-            <li><select id="flash-snake-timing">
-              <option value="20">0.05s</option>
-              <option value="200">0.2s</option>
-              <option value="500">0.5s</option>
-              <option value="1000" selected="">1s</option>
-              <option value="2000">2s</option>
-              <option value="3000">3s</option>
-            </select> Flash time
-            </li>
-          </ul>
-        </div>
-        <!--End test area-->
-        <div style="text-align:center; clear:both"><a id="delete-stuff-close" href="#">Close</a> (Press i to show again)</div>
-      </div>
-    </div>
-  </div>
-</div>
-<template id="tooltiptemplate">
-  <div style="position:relative;display:inline-block;color: #c44a4a;float:right;background-color: #f7f6d9;border-radius:50%;width:1em;height:1em;text-align:center;font-family:calibri;font-weight:bold;line-height:1em;" class="tooltip">
-  ?
-  <div style="position:absolute;top:0;left:120%;background-color:black;color:white;border-radius:0.5em;padding:0.5em;font-weight:normal;box-shadow:0 3px 10px rgba(0,0,0,0.4);width:110px;z-index:9003;visibility:hidden;opacity:0;transition: opacity 0.8s;" class="tooltiptext">
-  </div>
-  </div>
-</template>`;
 
-  let intialElement = document.createElement('div');
-  intialElement.style.backgroundColor = 'transparent';
-  intialElement.style.position = 'fixed';
-  intialElement.style.zIndex = '9001';
-  intialElement.innerHTML = initialHtml;
+  /*--SPEEDS--*/
 
-  document.getElementsByTagName('body')[0].prepend(intialElement);
-};
+  // blursed
+  img = new Image;
+  img.src = 'https://github.com/carlgustavh/GoogleSnakeCustomMenuStuffImages/blob/main/blursed.png?raw=true';
+  img.width = 47;
+  img.height = 47;
+  img.class = 'DqMRee SsAred';
+  document.querySelector('#speed').appendChild(img);
 
-function setupCss() {
-  let customStyle  = document.createElement('style');
-  customStyle.type = 'text/css';
-  customStyle.innerHTML = `.tooltip:hover .tooltiptext:not(:hover){visibility:visible!important;opacity:1!important;}
-  #drag-handle:hover{background-color:#f2e4b8!important;}
-  #delete-stuff-popup label,#delete-stuff-popup div{user-select:none;}
-  
-  :root {--rotation-period: 30s;}
-  .cer0Bd[data-spin='true']{animation: spin var(--rotation-period) linear infinite;}
-  .cer0Bd[data-spin='x']{animation: spinx var(--rotation-period) linear infinite;} 
-  @keyframes spin { 100% { transform:rotate(360deg); } }
-  @keyframes spinx { 100% { transform:rotateX(360deg); } }
-  `;
-  document.getElementsByTagName('head')[0].appendChild(customStyle);
-}
 
-function addTooltip(id, helpText) {
-  let tooltipTemplate = document.getElementById('tooltiptemplate').content;
-  let tooltipToInsert = tooltipTemplate.cloneNode(true);
-  tooltipToInsert.querySelector('.tooltiptext').textContent = helpText;
-  document.getElementById(id).parentElement.parentElement.appendChild(tooltipToInsert);
-}
 
-function loadTooltips() {
-  let tooltipText = {
-    'left-eye': "Left eye of snake. Looks towards the nearest fruit.",
-    'right-eye': "Right eye of snake. Looks towards the nearest fruit.",
-    'snoot': "Nose of snake.",
-    'snake-body': "The lines and curves that make up the snake's body.",
-    'lumps': "The swallowed fruit that pass through the snake.",
-    'eat-animation': "The snake's mouth when eating. Also the snake's nostrils.",
-    'tongue': "Animation when the snake sticks out it's tongue.",
-    'die': "Animation when the snake dies. Also used in sokoban mode.",
-    'shadow': "Used to hide the shadow for the snake and fruit. Hiding parts of the snake also hides the corresponding bit of shadow. The shadow's default colour is dark green.",
-    'all-but-shadow': "Used if you want to only show the shadow for the snake/fruit.",
-    'light-tiles': "The light tiles used for the background. You may need to restart (press esc and then play) for this to take effect. This is actually just a big rectangle that the dark tiles get drawn on top of. Has a glitchy visual effect when removed.",
-    'dark-tiles': "The dark tiles used for the background. You may need to restart (press esc and then play) for this to take effect. These are individually drawn squares that get drawn on top of the light tile background.",
-    'border': "The dark green border wall. You may need to restart (press esc and then play) for this to take effect. This is one big rectangle that gets drawn behind the light and dark tiles. Has a glitchy visual effect when removed in infinity mode.",
-    'fruit': "The fruit.",
-    'portals': "The portals that can be found in portal mode.",
-    'keys': "The keys that can be found in key mode.",
-    'walls': "The walls that can be found in wall mode, and also the locks that can be found in key mode.",
-    'sokoban-box': "The box that can be found in the mode where you push around a box into a goal.",
-    'sokoban-goal': "The goal that can be found in the mode where you push around a box into a goal.",
-    'flash-snake': "When this setting is turned on, the snake will briefly show whenever a fruit is eaten. The amount of time it shows for is controlled by the Flash Time setting. This only has a noticable effect if parts of the snake are hidden to begin with.",
-  };
+  // lightning
+  img = new Image;
+  img.src = 'https://github.com/carlgustavh/GoogleSnakeCustomMenuStuffImages/blob/main/lightning.png?raw=true';
+  img.width = 47;
+  img.height = 47;
+  img.class = 'DqMRee SsAred';
+  document.querySelector('#speed').appendChild(img);
 
-  for(let inputElementId in tooltipText) {
-    addTooltip(inputElementId, tooltipText[inputElementId]);
-  }
-}
+  // snail
+  img = new Image;
+  img.src = 'https://github.com/carlgustavh/GoogleSnakeCustomMenuStuffImages/blob/main/Snail.png?raw=true';
+  img.width = 47;
+  img.height = 47;
+  img.class = 'DqMRee SsAred';
+  document.querySelector('#speed').appendChild(img);
 
-function brieflyShowSnake() {
-  if(flashSnakeStatus.flashCount < 0) {
-    throw new Error('Error with flashing snake');
-  }
-  flashSnakeStatus.flashCount++;
-  flashSnakeStatus.currentlyFlashingSnake = true;
+  // fast-slow 2: faster and slower
+  img = new Image;
+  img.src = 'https://github.com/carlgustavh/GoogleSnakeCustomMenuStuffImages/blob/main/Faster%20And%20Slower.png?raw=true';
+  img.width = 47;
+  img.height = 47;
+  img.class = 'DqMRee SsAred';
+  document.querySelector('#speed').appendChild(img);
 
-  //Clear flashed snake after a duration
-  setTimeout(
-    function() {
-      flashSnakeStatus.flashCount--;if(flashSnakeStatus.flashCount === 0) {flashSnakeStatus.currentlyFlashingSnake = false;}
-    },
-    flashSnakeStatus.durationMillisecond
-  );
-}
+  // desert bus
+  img = new Image;
+  img.src = 'https://github.com/carlgustavh/GoogleSnakeCustomMenuStuffImages/blob/main/Desert%20Bus.png?raw=true';
+  img.width = 47;
+  img.height = 47;
+  img.class = 'DqMRee SsAred';
+  document.querySelector('#speed').appendChild(img);
 
-function spinHandler() {
-  let canvasElement = document.getElementsByClassName('cer0Bd')[0];
-  if(!this.checked) {
-    canvasElement.dataset.spin = 'false';
-  } else {
-    let r = document.querySelector(':root');
-    let promptResponse = prompt('How many seconds should a spin take? Enter a number','30');
-    promptResponse = parseFloat(promptResponse);
-    if(isNaN(promptResponse) || promptResponse <= 0) {
-      alert('Invalid value entered. Defaulting to 30');
-      r.style.setProperty('--rotation-period', '30s');
-    } else {
-      alert(`Spinning every ${promptResponse} seconds.`);
-      r.style.setProperty('--rotation-period', promptResponse + 's');
-    }
-    let spinAroundZ = confirm('Spin around z axis?');//Spin around x or z axis.
-    canvasElement.dataset.spin = spinAroundZ ? 'true' : 'x';
-  }
-}
+  // bullet
+  img = new Image;
+  img.src = 'https://github.com/carlgustavh/GoogleSnakeCustomMenuStuffImages/blob/main/Bullet.png?raw=true';
+  img.width = 47;
+  img.height = 47;
+  img.class = 'DqMRee SsAred';
+  document.querySelector('#speed').appendChild(img);
 
-window.snake.deleteStuffMod = function(){
-  injectInitialHtml();
-  setupCss();
-  loadTooltips();
-  setupEventListeners();
-  dragHandler.initialiseDragHandler();
-  const scripts = document.body.getElementsByTagName('script');
-  for(let script of scripts) {
-    if(script.src == "" || script.src.indexOf('apis.google.com') != -1){
-      continue;
-    }
+  // hyperbullet (red)
+  img = new Image;
+  img.src = 'https://github.com/carlgustavh/GoogleSnakeCustomMenuStuffImages/blob/main/Red%20bullet.png?raw=true';
+  img.width = 47;
+  img.height = 47;
+  img.class = 'DqMRee SsAred';
+  document.querySelector('#speed').appendChild(img);
+
+  // ultrabullet (purple)
+  img = new Image;
+  img.src = 'https://github.com/carlgustavh/GoogleSnakeCustomMenuStuffImages/blob/main/Purple%20bullet.png?raw=true';
+  img.width = 47;
+  img.height = 47;
+  img.class = 'DqMRee SsAred';
+  document.querySelector('#speed').appendChild(img);
+
+  // yeetbullet (blue)
+  img = new Image;
+  img.src = 'https://github.com/carlgustavh/GoogleSnakeCustomMenuStuffImages/blob/main/Blue%20Bullet.png?raw=true';
+  img.width = 47;
+  img.height = 47;
+  img.class = 'DqMRee SsAred';
+  document.querySelector('#speed').appendChild(img);
+
+  // eternity
+  img = new Image;
+  img.src = 'https://github.com/carlgustavh/GoogleSnakeCustomMenuStuffImages/blob/main/eternal.png?raw=true';
+  img.width = 47;
+  img.height = 47;
+  img.class = 'DqMRee SsAred';
+  document.querySelector('#speed').appendChild(img);
+
+  // ultradeath
+  img = new Image;
+  img.src = 'https://github.com/carlgustavh/GoogleSnakeCustomMenuStuffImages/blob/main/ultradeath.png?raw=true';
+  img.width = 47;
+  img.height = 47;
+  img.class = 'DqMRee SsAred';
+  document.querySelector('#speed').appendChild(img);
+
+
+  /*--COUNTS--*/
+
+  // 13
+  img = new Image;
+  img.src = 'https://github.com/carlgustavh/GoogleSnakeCustomMenuStuffImages/blob/main/13.png?raw=true';
+  img.width = 47;
+  img.height = 47;
+  document.querySelector('#count').appendChild(img);
+
+  // 25
+  img = new Image;
+  img.src = 'https://github.com/carlgustavh/GoogleSnakeCustomMenuStuffImages/blob/main/25.png?raw=true';
+  img.width = 47;
+  img.height = 47;
+  document.querySelector('#count').appendChild(img);
+
+  // 40 :rolling_eyes:
+  img = new Image;
+  img.src = 'https://github.com/carlgustavh/GoogleSnakeCustomMenuStuffImages/blob/main/40.png?raw=true';
+  img.width = 47;
+  img.height = 47;
+  document.querySelector('#count').appendChild(img);
+
+  // 87
+  img = new Image;
+  img.src = 'https://github.com/carlgustavh/GoogleSnakeCustomMenuStuffImages/blob/main/87.png?raw=true';
+  img.width = 47;
+  img.height = 47;
+  document.querySelector('#count').appendChild(img);
+
+  // apple bomb
+  img = new Image;
+  img.src = 'https://github.com/carlgustavh/GoogleSnakeCustomMenuStuffImages/blob/main/Apple%20Bomb.png?raw=true';
+  img.width = 47;
+  img.height = 47;
+  document.querySelector('#count').appendChild(img);
+
+  // apple nuke
+  img = new Image;
+  img.src = 'https://github.com/carlgustavh/GoogleSnakeCustomMenuStuffImages/blob/main/nuke.png?raw=true';
+  img.width = 47;
+  img.height = 47;
+  document.querySelector('#count').appendChild(img);
+
+  /* making do things */
+  const scripts = document.getElementsByTagName('script');
+  for (let script of scripts) {
+    if(script.src === '' || script.src.includes('apis.google.com'))continue;
     const req = new XMLHttpRequest();
     req.open('GET', script.src);
-    req.onload = function() {
-      if(this.responseText.indexOf('trophy') !== -1)
-        processCode(this.responseText);
+    req.onload = function () {
+      const code = this.responseText;
+      if (code.indexOf('trophy') === -1)
+        return;
+
+      const functio = code.match(
+        /[a-zA-Z0-9_$]{1,8}\.prototype\.reset=function\(\){this\.[a-zA-Z0-9_$]{1,8}=\[\];[^]*?Set\)}/
+      )[0];
+      const thjaselcdtctedaboupplelcountthingffjfjfjfjfjfjfjfjfjfj = functio.match(
+        /0!==this\.settings\.[a-zA-Z0-9_$]{1,6}/
+      )[0].replace('0!==', '');
+      const pafihwotyhopyplacetheiopafsjafijplesllllllll = functio.match(
+        /this\.[a-zA-Z0-9_$]{1,6}\.push\([a-zA-Z0-9_$]{1,6}\(this,/
+      )[0];
+      const inevilmodesf = code.match(
+        /[a-zA-Z0-9_$]{1,6}=function\(a\){return [a-zA-Z0-9_$]{1,6}\(a,2\)\|\|[a-zA-Z0-9_$]{1,6}\(a,8\)\|\|[a-zA-Z0-9_$]{1,6}\(a,9\)\|\|[a-zA-Z0-9_$]{1,6}\(a,10\)}/
+      )[0].match(/[a-zA-Z0-9_$]{1,6}/)[0];
+      console.log(inevilmodesf);
+
+      const apples = pafihwotyhopyplacetheiopafsjafijplesllllllll.match(/this\.[a-zA-Z0-9_$]{1,6}/)[0];
+      const modecheck = code.match(
+        /[a-zA-Z0-9_$]{1,6}=function\(a,b\){return 15===a[^}]*?===b}/
+      )[0].match(/[a-zA-Z0-9_$]{1,6}/)[0];
+
+      
+
+          
+      const defaultTileLength = code.match(/[a-zA-Z0-9_$]{1,6}=[a-zA-Z0-9_$]{1,6}\?175:135/)[0].match(
+        /[a-zA-Z0-9_$]{1,6}/
+      )[0];console.log(defaultTileLength);
+      const reg = new RegExp(`this\\.[a-zA-Z0-9_$]{1,6}=${defaultTileLength}\\*a`);
+      console.log(reg);
+      const realTileLength = code.match(reg)[0].match(
+        /this\.[a-zA-Z0-9_$]{1,6}/
+      )[0];
+      const speed = code.match(/switch\(this\.settings\.[a-zA-Z0-9_$]{1,6}\){case 1:a=\.66/)[0].match(
+        /this\.settings\.[a-zA-Z0-9_$]{1,6}/
+      )[0];
+      
+      let corrects_ = code.match(/s_=[a-zA-Z0-9_$]{1,8}\.prototype;\n?s_\.reset=function\(\)/)[0].match(/[a-zA-Z0-9_$]{1,8}\.prototype/)[0];
+      const soup = code.match(
+        /s_\.tick=function\(\){[^]*?this\.[a-zA-Z0-9_$]{1,8}\.keys,\n?this\.[a-zA-Z0-9_$]{1,8}\.[a-zA-Z0-9_$]{1,8}\)}}}}/
+      )[0];
+      const f = soup.match(
+        /:this\.[a-zA-Z0-9_$]{1,6}\.[a-zA-Z0-9_$]{1,8}\+=1;this\.[a-zA-Z0-9_$]{1,6}\+\+;/
+      )[0];
+      eval('var _soup = 1.33;');
+      eval('var _soep = 1.85;');
+      eval(
+        soup.replace('s_', corrects_).replace(
+          f,
+          f + `_soup = Math.random() < .5 ? .66 : 1.33;
+          _soep = Math.random() < .5 ? .45 : 1.85;
+          let _le;
+          switch(${speed}) {
+            case 1:  _le = .66;    break;
+            case 2:  _le = 1.33;   break;
+            case 3:  _le = _soup;  break;
+            case 4:  _le = .45;    break;
+            case 5:  _le = 1.85;   break;
+            case 6:  _le = _soep;  break;
+            case 7:  _le = 18.5;   break;
+            case 8:  _le = .35;    break;
+            case 9:  _le = .25;    break;
+            case 10: _le = .15;    break;
+            case 11: _le = .05;    break;
+            case 12: _le = 26640;  break;
+            case 13: _le = .00001; break;
+            default: _le = 1;      break;
+          }
+          ${realTileLength} = ${defaultTileLength} * _le;
+          `
+        )
+      );
+
+      eval(
+        functio.replace(
+          `if(a)`,
+          `
+          if(${thjaselcdtctedaboupplelcountthingffjfjfjfjfjfjfjfjfjfj} > 2) {
+            if(!(${inevilmodesf}(this.settings))) {
+              if(${thjaselcdtctedaboupplelcountthingffjfjfjfjfjfjfjfjfjfj} === 3) {
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} 1, 2));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -1, 2));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -3, 2));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} 0, 1));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -2, 1));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} 1, 0));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -1, 0));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -3, 0));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} 0, -1));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -2, -1));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} 1, -2));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -1, -2));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -3, -2));
+              } else if(${thjaselcdtctedaboupplelcountthingffjfjfjfjfjfjfjfjfjfj} === 4) {
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} 1, 2));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} 0, 2));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -1, 2));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -2, 2));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -3, 2));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} 1, 1));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} 0, 1));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -1, 1));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -2, 1));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -3, 1));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} 1, 0));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} 0, 0));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -1, 0));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -2, 0));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -3, 0));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} 1, -1));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} 0, -1));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -1, -1));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -2, -1));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -3, -1));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} 1, -2));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} 0, -2));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -1, -2));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -2, -2));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -3, -2));
+              } else if(${thjaselcdtctedaboupplelcountthingffjfjfjfjfjfjfjfjfjfj} === 5) {
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} 1, 2));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} 0, 2));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -1, 2));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -2, 2));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -3, 2));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} 1, 1));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} 0, 1));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -1, 1));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -2, 1));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -3, 1));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} 1, 0));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} 0, 0));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -1, 0));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -2, 0));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -3, 0));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} 1, -1));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} 0, -1));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -1, -1));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -2, -1));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -3, -1));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} 1, -2));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} 0, -2));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -1, -2));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -2, -2));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -3, -2));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -3, -3));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -2, -3));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -1, -3));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} 0, -3));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} 1, -3));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} 2, -2));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} 2, -1));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} 2, 0));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} 2, 1));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} 2, 2));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} 1, 3));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} 0, 3));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -1, 3));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -2, 3));
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -3, 3));
+              } else if(${thjaselcdtctedaboupplelcountthingffjfjfjfjfjfjfjfjfjfj} === 6) {
+                for (i=-7;i<3;i++) {
+                  ${pafihwotyhopyplacetheiopafsjafijplesllllllll} i, -4));
+                }
+                for (i=-7;i<3;i++) {
+                  ${pafihwotyhopyplacetheiopafsjafijplesllllllll} i, -3));
+                }
+                for (i=-7;i<3;i++) {
+                  ${pafihwotyhopyplacetheiopafsjafijplesllllllll} i, -2));
+                }
+                for (i=-7;i<3;i++) {
+                  ${pafihwotyhopyplacetheiopafsjafijplesllllllll} i, -1));
+                }
+                for (i=-3;i<3;i++) {
+                  ${pafihwotyhopyplacetheiopafsjafijplesllllllll} i, 0));
+                }
+                for (i=-7;i<3;i++) {
+                  ${pafihwotyhopyplacetheiopafsjafijplesllllllll} i, 1));
+                }
+                for (i=-7;i<3;i++) {
+                  ${pafihwotyhopyplacetheiopafsjafijplesllllllll} i, 2));
+                }
+                for (i=-7;i<3;i++) {
+                  ${pafihwotyhopyplacetheiopafsjafijplesllllllll} i, 3));
+                }
+                for (i=-7;i<3;i++) {
+                  ${pafihwotyhopyplacetheiopafsjafijplesllllllll} i, 4));
+                }
+              } else if(${thjaselcdtctedaboupplelcountthingffjfjfjfjfjfjfjfjfjfj} === 7) {
+                for (i=0;i<200;i++) {
+                  ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -1, 0));
+                }
+              } else if(${thjaselcdtctedaboupplelcountthingffjfjfjfjfjfjfjfjfjfj} === 8) {
+                  for (i=0;i<10000;i++) {
+                    ${pafihwotyhopyplacetheiopafsjafijplesllllllll} -1, 0));
+                  }
+              } else
+                ${pafihwotyhopyplacetheiopafsjafijplesllllllll} 100000, 1));
+
+            } else {
+              if(${thjaselcdtctedaboupplelcountthingffjfjfjfjfjfjfjfjfjfj} < 7)
+                for(
+                  let i = 0; i < (
+                    ${thjaselcdtctedaboupplelcountthingffjfjfjfjfjfjfjfjfjfj} === 3
+                      ? 13
+                    : ${thjaselcdtctedaboupplelcountthingffjfjfjfjfjfjfjfjfjfj} === 4
+                      ? 25
+                    : ${thjaselcdtctedaboupplelcountthingffjfjfjfjfjfjfjfjfjfj} === 5
+                      ? 40
+                    : ${thjaselcdtctedaboupplelcountthingffjfjfjfjfjfjfjfjfjfj} === 6
+                      ? 100
+                    : ${thjaselcdtctedaboupplelcountthingffjfjfjfjfjfjfjfjfjfj} === 7
+                      ? 0
+                    : ${thjaselcdtctedaboupplelcountthingffjfjfjfjfjfjfjfjfjfj} === 8
+                      ? 0
+                    : 0
+                  ); i++
+                ) {
+                  ${pafihwotyhopyplacetheiopafsjafijplesllllllll} i - ~~((
+                    ${thjaselcdtctedaboupplelcountthingffjfjfjfjfjfjfjfjfjfj} === 3
+                      ? 13
+                    : ${thjaselcdtctedaboupplelcountthingffjfjfjfjfjfjfjfjfjfj} === 4
+                      ? 25
+                    : ${thjaselcdtctedaboupplelcountthingffjfjfjfjfjfjfjfjfjfj} === 5
+                      ? 40
+                    : ${thjaselcdtctedaboupplelcountthingffjfjfjfjfjfjfjfjfjfj} === 6
+                      ? 100
+                    : ${thjaselcdtctedaboupplelcountthingffjfjfjfjfjfjfjfjfjfj} === 7
+                      ? 0
+                    : ${thjaselcdtctedaboupplelcountthingffjfjfjfjfjfjfjfjfjfj} === 8
+                      ? 0
+                    : 0
+                  ) / 1.25), -4));
+                  ${pafihwotyhopyplacetheiopafsjafijplesllllllll} i- ~~((
+                    ${thjaselcdtctedaboupplelcountthingffjfjfjfjfjfjfjfjfjfj} === 3
+                      ? 13
+                    : ${thjaselcdtctedaboupplelcountthingffjfjfjfjfjfjfjfjfjfj} === 4
+                      ? 25
+                    : ${thjaselcdtctedaboupplelcountthingffjfjfjfjfjfjfjfjfjfj} === 5
+                      ? 40
+                    : ${thjaselcdtctedaboupplelcountthingffjfjfjfjfjfjfjfjfjfj} === 6
+                      ? 100
+                    : ${thjaselcdtctedaboupplelcountthingffjfjfjfjfjfjfjfjfjfj} === 7
+                      ? 0
+                    : ${thjaselcdtctedaboupplelcountthingffjfjfjfjfjfjfjfjfjfj} === 8
+                      ? 0
+                    : 0
+                  ) / 1.25), 4));
+                  
+                }
+              else {
+                for(let i = 0; i < (
+                  ${thjaselcdtctedaboupplelcountthingffjfjfjfjfjfjfjfjfjfj} === 7
+                    ? 200
+                  : 20000
+                ); i++)
+                  ${pafihwotyhopyplacetheiopafsjafijplesllllllll} 0, 0));
+              }
+            }
+            
+            
+            
+          } else if(a)
+          `
+        ).replace(
+          'Set)}',
+          `Set);
+            if(${modecheck}(this.settings, 2) && ${thjaselcdtctedaboupplelcountthingffjfjfjfjfjfjfjfjfjfj} > 3) {
+              console.log('te');
+              for(let __i___ = 0; __i___ < ${apples}.length; __i___ += 2) {
+                ${apples}[__i___].type = ${apples}[__i___ + 1].type = ~~(Math.random() * 21);
+              }
+            }
+          }`
+        )
+      );
+        
+        
+        
+        
+      eval(
+        code.match(
+          /s_\.reset=function\(\){this\.[a-zA-Z0-9_$]{1,8}=null;[^]*?!0\)\)}/
+        )[0].replace('s_', corrects_).replace(/{case 1:a=\.66[^}]*?1}/, `{
+          case 1:  a = .66;    break a;
+          case 2:  a = 1.33;   break a;
+          case 3:  a = _soup;  break a;
+          case 4:  a = .45;    break a;
+          case 5:  a = 1.85;   break a;
+          case 6:  a = _soep;  break a;
+          case 7:  a = 18.5;   break a;
+          case 8:  a = .35;    break a;
+          case 9:  a = .25;    break a;
+          case 10: a = .15;    break a;
+          case 11: a = .05;    break a;
+          case 12: a = 26640;  break a;
+          case 13: a = .00001; break a;
+          default: a = 1;      break a;
+        }`)
+      );
+
+      // const fishes = code.match(
+      //   /[a-zA-Z0-9_$]{1,6}=function\(a\){[a-zA-Z0-9_$]{1,6}\.call\(this,a\.[a-zA-Z0-9_$]{1,6}\);var b=this;this\.settings[^]*?h6Ousc[^]*?\(\)\)}/
+      // )[0];
+      
+      const thing = document.querySelector('#count').parentNode;
+      thing.onmousemove = thing.onclick = function() {
+        const count_ = [...document.querySelector('#count').children].indexOf(document.querySelector('#count').getElementsByClassName('tuJOWd')[0])
+        if(count_ < 3) {
+          __b = document.body.getElementsByClassName('UJhXPd wSwbef EWyEF')[0];
+          [...__b.children].forEach((e, i) => i > 1 && (__b.removeChild(__b.children[i])));
+        }
+        if(count_ === 3) {
+          __b = document.body.getElementsByClassName('UJhXPd wSwbef EWyEF')[0];
+          [...__b.children].forEach((e, i) => i > 1 && (__b.removeChild(__b.children[i])));
+          __c = new Image;
+          __c.src = 'https://github.com/carlgustavh/GoogleSnakeCustomMenuStuffImages/blob/main/13.png?raw=true';
+          __c.width = __c.height = 47;
+          __c.style = 'position:fixed;top: 10px;';
+          __b.appendChild(__c);
+        }
+        if(count_ === 4) {
+          __b = document.body.getElementsByClassName('UJhXPd wSwbef EWyEF')[0];
+          [...__b.children].forEach((e, i) => i > 1 && (__b.removeChild(__b.children[i])));
+          __c = new Image;
+          __c.src = 'https://github.com/carlgustavh/GoogleSnakeCustomMenuStuffImages/blob/main/25.png?raw=true';
+          __c.width = __c.height = 47;
+          __c.style = 'position:fixed;top: 10px;';
+          __b.appendChild(__c);
+        }
+        if(count_ === 5) {
+          __b = document.body.getElementsByClassName('UJhXPd wSwbef EWyEF')[0];
+          [...__b.children].forEach((e, i) => i > 1 && (__b.removeChild(__b.children[i])));
+          __c = new Image;
+          __c.src = 'https://github.com/carlgustavh/GoogleSnakeCustomMenuStuffImages/blob/main/40.png?raw=true';
+          __c.width = __c.height = 47;
+          __c.style = 'position:fixed;top: 10px;';
+          __b.appendChild(__c);
+        }
+        if(count_ === 6) {
+          __b = document.body.getElementsByClassName('UJhXPd wSwbef EWyEF')[0];
+          [...__b.children].forEach((e, i) => i > 1 && (__b.removeChild(__b.children[i])));
+          __c = new Image;
+          __c.src = 'https://github.com/carlgustavh/GoogleSnakeCustomMenuStuffImages/blob/main/87.png?raw=true';
+          __c.width = __c.height = 47;
+          __c.style = 'position:fixed;top: 10px;';
+          __b.appendChild(__c);
+        }
+        if(count_ === 7) {
+          __b = document.body.getElementsByClassName('UJhXPd wSwbef EWyEF')[0];
+          [...__b.children].forEach((e, i) => i > 1 && (__b.removeChild(__b.children[i])));
+          __c = new Image;
+          __c.src = 'https://github.com/carlgustavh/GoogleSnakeCustomMenuStuffImages/blob/main/Apple%20Bomb.png?raw=true';
+          __c.width = __c.height = 47;
+          __c.style = 'position:fixed;top: 10px;';
+          __b.appendChild(__c);
+                  }
+        if(count_ === 7) {
+          __b = document.body.getElementsByClassName('UJhXPd wSwbef EWyEF')[0];
+          [...__b.children].forEach((e, i) => i > 1 && (__b.removeChild(__b.children[i])));
+          __c = new Image;
+          __c.src = 'https://github.com/carlgustavh/GoogleSnakeCustomMenuStuffImages/blob/main/Apple%20Bomb.png?raw=true';
+          __c.width = __c.height = 47;
+          __c.style = 'position:fixed;top: 20px;';
+          __b.appendChild(__c);
+        }
+        if(count_ === 8) { 
+          __b = document.body.getElementsByClassName('UJhXPd wSwbef EWyEF')[0];
+          [...__b.children].forEach((e, i) => i > 1 && (__b.removeChild(__b.children[i])));
+          __c = new Image;
+          __c.src = 'https://github.com/carlgustavh/GoogleSnakeCustomMenuStuffImages/blob/main/nuke.png?raw=true';
+          __c.width = __c.height = 47;
+          __c.style = 'position:fixed;top: 10px;';
+          __b.appendChild(__c);
+        }
+      };
+      
+
+      const meat = code.match(
+        /[a-zA-Z0-9_$]{1,6}=function\(a\){a\.[a-zA-Z0-9_$]{1,6}\.clearRect\(0,0,[^]*?0\),0,b\)}/
+      )[0];
+      const ul = meat.match(
+        /var b=a\.[a-zA-Z0-9_$]{1,6}\.width/
+      )[0].replace('var b=', '');
+      const mDb = meat.match(
+        /a\.[a-zA-Z0-9_$]{1,6}\.render/g
+      )[1].replace('.render', '');
+      const Na = meat.match(
+        /1===a\.settings\.[a-zA-Z0-9_$]{1,6}/
+      )[0].replace('1===', '');
+      eval(
+        meat.replace(
+          '&&',
+          '?'
+        ).replace(
+          'd));',
+          `d)) : ${Na} !== 0 && (${mDb}.context.drawImage(document.querySelector('#speed').children[${Na}], ${ul} - 80, c.y - 80, 80, 80));`
+        )
+      );
+
+      let latests_ = code.match(
+        /s_=[a-zA-Z0-9_$]{1,8}\.prototype;\n?s_\.[a-zA-Z0-9_$]{1,8}=function\(\){var a=this\.[a-zA-Z0-9_$]{1,8}\("IoE5Ec[^]*?200\)}/
+      )[0].match(/[a-zA-Z0-9_$]{1,8}\.prototype/)[0];
+      
+
+      const c = code.match(
+        /s_\.[a-zA-Z0-9_$]{1,8}=function\(\){var a=[a-zA-Z0-9_$]{1,8}\.[a-zA-Z0-9_$]{1,8}\(this\.[a-zA-Z0-9_$]{1,8}\.canvas\);[^]*?a\)}}/
+      )[0].replace('s_', latests_);
+      const dec = c.match(
+        /f\.[a-zA-Z0-9_$]{1,8}=new [a-zA-Z0-9_$]{1,8}\(Math\.floor\(b\/f\.[a-zA-Z0-9_$]{1,8}\),Math\.floor\(c\/f\.[a-zA-Z0-9_$]{1,8}\)\)\);/
+      )[0];
+      const wa = dec.match(/b\/f\.[a-zA-Z0-9_$]{1,8}/)[0].replace('b/', '');
+      const beeeeeeaniebaby = `[...document.querySelector('#size').children].indexOf(document.querySelector('#size').getElementsByClassName('tuJOWd')[0])`;
+      eval(
+        c.replace(
+          dec,
+          `${dec.match(/f\.[a-zA-Z0-9_$]{1,8}/)} = {
+            width: (${beeeeeeaniebaby}) === 3 ? 5 : (${beeeeeeaniebaby}) === 4 ? 7 : (${beeeeeeaniebaby}) === 5 ? 12 : (${beeeeeeaniebaby}) === 6 ? 37 : (${beeeeeeaniebaby}) === 7 ? 64 : (${beeeeeeaniebaby}) === 8 ? 105 : (${beeeeeeaniebaby}) === 9 ? 168 : (${beeeeeeaniebaby}) === 10 ? 600 : Math.floor(b/${wa}),
+            height: (${beeeeeeaniebaby}) === 3 ? 4 : (${beeeeeeaniebaby}) === 4 ? 6 : (${beeeeeeaniebaby}) === 5 ? 11 : (${beeeeeeaniebaby}) === 6 ? 32 : (${beeeeeeaniebaby}) === 7 ? 56 : (${beeeeeeaniebaby}) === 8 ? 92  : (${beeeeeeaniebaby}) === 9 ? 147 : (${beeeeeeaniebaby}) === 10 ? 530 : Math.floor(c/${wa})
+          });
+          let squareSize = 600 / (${dec.match(/f\.[a-zA-Z0-9_$]{1,8}/)}).width;
+          if(squareSize * (${dec.match(/f\.[a-zA-Z0-9_$]{1,8}/)}).height > 530)
+            squareSize = 530 / (${dec.match(/f\.[a-zA-Z0-9_$]{1,8}/)}).height;
+          squareSize = squareSize * .98;
+          if(squareSize > 1)squareSize = ~~squareSize;
+          (${beeeeeeaniebaby}) >= 3 && (${wa} = squareSize);
+          `
+        )
+      );
+      
     };
     req.send();
   }
-  
 };
-
-function processCode(code) {
-  //Function for body parts
-  let rightEyeRegex = /(\([a-z]\?[a-z]\.[$a-zA-Z0-9_]{0,6}:[a-z]\.[$a-zA-Z0-9_]{0,6}\)\.render\([a-z],\n?[a-z],[a-z],[a-z]\.[$a-zA-Z0-9_]{0,6},[a-z])(\),)/;
-
-  let funcWithBodyParts = findFunctionInCode(code, /[$a-zA-Z0-9_]{0,6}=function\(a,b,c,d,e\)$/,
-  rightEyeRegex,
-  deleteModDebug);
-
-  //Right Eye
-  funcWithBodyParts = assertReplace(funcWithBodyParts, rightEyeRegex,
-  '(flashSnakeStatus.currentlyFlashingSnake || checkboxes.checkboxStatuses.rightEye) && $1 * snakeScale.eyes $2');
-
-  //Left Eye
-  funcWithBodyParts = assertReplace(funcWithBodyParts,/(\([$a-zA-Z0-9_]{0,6}\?[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}:[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\)\.render\([$a-zA-Z0-9_]{0,6},\n?[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6},\n?[$a-zA-Z0-9_]{0,6})(\)\);)/,
-  '(flashSnakeStatus.currentlyFlashingSnake || checkboxes.checkboxStatuses.leftEye) && $1 * snakeScale.eyes $2');
-
-  //Eye offsets
-  funcWithBodyParts = assertReplaceAll(funcWithBodyParts,/[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\+=\n?Math\.(?:cos|sin)\([$a-zA-Z0-9_]{0,6}[+-][$a-zA-Z0-9_]{0,6}\)\*[$a-zA-Z0-9_]{0,6}/g,
-  '$& * snakeScale.eyes');
-
-
-
-  //Eat anim
-  funcWithBodyParts = assertReplace(funcWithBodyParts,/(\([$a-zA-Z0-9_]{0,6}\?[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}:[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\)\.render\(Math\.floor\([$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\),\n?[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6})(\);)/,
-  '(flashSnakeStatus.currentlyFlashingSnake || checkboxes.checkboxStatuses.eatAnimation) && $1 * snakeScale.face $2');
-
-  //Tongue
-  funcWithBodyParts = assertReplace(funcWithBodyParts,/(\([$a-zA-Z0-9_]{0,6}\?[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}:[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\)\.render\([$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6})(\)\)})/,
-  'checkboxes.checkboxStatuses.tongue && $1 * snakeScale.face $2');
-
-  //Die anim
-  funcWithBodyParts = assertReplace(funcWithBodyParts,/(\([$a-zA-Z0-9_]{0,6}\?[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}:[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\)\.render\([$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6}\*[$a-zA-Z0-9_]{0,6})(\),)/,
-  '(flashSnakeStatus.currentlyFlashingSnake || checkboxes.checkboxStatuses.die) && $1 * snakeScale.face $2');
-
-  //Snoot
-  funcWithBodyParts = assertReplace(funcWithBodyParts,/[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.fill\(\);/,
-  '(flashSnakeStatus.currentlyFlashingSnake || checkboxes.checkboxStatuses.snoot) && $&');
-
-  //Snoot scale
-  funcWithBodyParts = assertReplace(funcWithBodyParts,/\.4/,'snakeScale.face * 0.4');
-
-  eval(funcWithBodyParts);
-
-  //Function for fruit
-  let fruitRegex = /[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.drawImage\([$a-zA-Z0-9_]{0,6},0,0,128,128,[$a-zA-Z0-9_]{0,6}\.x-[$a-zA-Z0-9_]{0,6}\/2,[$a-zA-Z0-9_]{0,6}\.y-[$a-zA-Z0-9_]{0,6}\/2,[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6}\)/;
-
-  let funcWithFruit = findFunctionInCode(code, /[$a-zA-Z0-9_]{0,6}\.prototype\.render=function\([$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6}\)$/,
-  fruitRegex, 
-  deleteModDebug);
-
-  //Fruit
-  funcWithFruit = assertReplace(funcWithFruit,fruitRegex,
-  'checkboxes.checkboxStatuses.fruit && $&');
-
-  //Poison mode fruit disappearing animation
-  funcWithFruit = assertReplace(funcWithFruit,/this\.[$a-zA-Z0-9_]{0,6}\.drawImage\([a-z],0,\n?0,\n?128,128,-\([a-z]\/2\),-\([a-z]\/2\),[a-z],[a-z]\)/,
-    'checkboxes.checkboxStatuses.fruit && $&');
-
-  //For compatitibilty, also change this code for animatedSnakeColours
-  /*
-  //Commented out until I find a new way to do animated Snake Colours
-  funcWithFruit = assertReplaceAll(funcWithFruit,'"#578A34"', '((typeof animateSnakeGlobals !== "undefined" && animateSnakeGlobals.voice.isBorderSet) ? animateSnakeGlobals.voice.borderColour : "#578A34")');
-  */
-
-  eval(funcWithFruit);
-
-  let funcWithRenderWall = findFunctionInCode(code,/[$a-zA-Z0-9_]{0,6}\.prototype\.render=function\(a\)$/,
-  /this\.[$a-zA-Z0-9_]{0,6}\.fillRect\([$a-zA-Z0-9_]{0,6}\.x-\n?[$a-zA-Z0-9_]{0,6}\/2,[$a-zA-Z0-9_]{0,6}\.y-[$a-zA-Z0-9_]{0,6}\/2,[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6}\)/,
-  deleteModDebug);
-
-  //for walls/locks
-  funcWithRenderWall = assertReplace(funcWithRenderWall,/this\.[$a-zA-Z0-9_]{0,6}\.fillRect\([$a-zA-Z0-9_]{0,6}\.x-\n?[$a-zA-Z0-9_]{0,6}\/2,[$a-zA-Z0-9_]{0,6}\.y-[$a-zA-Z0-9_]{0,6}\/2,[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6}\)/,
-  'checkboxes.checkboxStatuses.walls && $&');
-
-  //lock icon
-  funcWithRenderWall = assertReplace(funcWithRenderWall,/this\.[$a-zA-Z0-9_]{0,6}\.drawImage\(this\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.canvas,\n?128\*[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6},0,128,128,[a-z]\.x-[a-z]\/2,[a-z]\.y-[a-z]\/2,[a-z],[a-z]\)\)/,
-  'checkboxes.checkboxStatuses.walls && $&');
-
-  eval(funcWithRenderWall);
-
-  //Sokoban box
-  let funcWithSokoban = findFunctionInCode(code, /[$a-zA-Z0-9_]{0,6}=function\([$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6}\)$/,
-  /[$a-zA-Z0-9_]{0,6}\([a-z]\.settings,7\)&&![a-z]&&\([a-z]=new [$a-zA-Z0-9_]{0,6}\([a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.width\*\n?[a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}-[a-z]\.x,[a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.height\*[a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}-\n?[a-z]\.y\),/,
-  deleteModDebug);
-
-  //Sokoban
-  funcWithSokoban = assertReplace(funcWithSokoban,/[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.drawImage\([a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.canvas,128,0,128,\n?128,[$a-zA-Z0-9_]{0,6}\.x-[$a-zA-Z0-9_]{0,6}\/2,[$a-zA-Z0-9_]{0,6}\.y-[$a-zA-Z0-9_]{0,6}\/2,[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6}\)/,
-  'checkboxes.checkboxStatuses.sokobanBox && $&');
-
-  //Sokoban
-  funcWithSokoban = assertReplace(funcWithSokoban,/[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.drawImage\([a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.canvas,0,0,128,128,[$a-zA-Z0-9_]{0,6}\.x-[$a-zA-Z0-9_]{0,6}\/2,[$a-zA-Z0-9_]{0,6}\.y-[$a-zA-Z0-9_]{0,6}\/2,[$a-zA-Z0-9_]{0,6},\n?[$a-zA-Z0-9_]{0,6}\)/,
-  'checkboxes.checkboxStatuses.sokobanBox && $&');
-
-  eval(funcWithSokoban);
-
-  //Sokoban goal func
-  let funcWithSokobanGoal = findFunctionInCode(code, /[$a-zA-Z0-9_]{0,6}=function\(a,b,c,d,e\)$/,
-  /[a-z]\.[$a-zA-Z0-9_]{0,6}\.drawImage\([a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.canvas,128\*[a-z],0,128,128,[a-z]\.x-[a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\/2\+[a-z],[a-z]\.y-[a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\/2\+[a-z],[a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6},[a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\)/,
-  deleteModDebug);
-
-  //Sokoban goal
-  funcWithSokobanGoal = assertReplace(funcWithSokobanGoal,/[a-z]\.[$a-zA-Z0-9_]{0,6}\.drawImage\([a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.canvas,128\*[a-z],0,128,128,[a-z]\.x-[a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\/2\+[a-z],[a-z]\.y-[a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\/2\+[a-z],[a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6},[a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\)/,
-  'checkboxes.checkboxStatuses.sokobanGoal && $&');
-
-  eval(funcWithSokobanGoal);
-
-  //Shadow
-  let funcWithShadow = findFunctionInCode(code, /[$a-zA-Z0-9_]{0,6}=function\([$a-zA-Z0-9_]{0,6}\)$/,/destination-atop/,deleteModDebug);
-  
-  funcWithShadow = assertReplace(funcWithShadow,/[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.globalCompositeOperation="destination-atop";/,'if(!checkboxes.checkboxStatuses.shadow){return}$&')
-  
-  eval(funcWithShadow);
-
-  //Normal background (i.e not on infinity)
-
-  let funcWithBackground = findFunctionInCode(code, /[$a-zA-Z0-9_]{0,6}=function\(a\)$/,
-  /0\);[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.fillRect\(0,0,[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.canvas\.width,\n?[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.canvas\.height\);/,
-  deleteModDebug);
-
-  funcWithBackground = assertReplace(funcWithBackground,/[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.fillRect\(0,0,[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.canvas\.width,\n?[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.canvas\.height\);/,
-  'if(checkboxes.checkboxStatuses.lightTiles){$&}');
-
-  funcWithBackground = assertReplace(funcWithBackground,/[a-z]\.[$a-zA-Z0-9_]{0,6}\.fillRect\([a-z]\*[a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6},[a-z]\*[a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6},[a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6},[a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\)/,
-  'checkboxes.checkboxStatuses.darkTiles && $&');
-
-  eval(funcWithBackground);
-
-  let funcWithMiscRendering = findFunctionInCode(code,/[$a-zA-Z0-9_]{0,6}\.prototype.render=function\(a,b\)$/,
-    /(?<=0\);)[a-z]\.context\.fillRect\(0,0,[a-z]\.context\.canvas\.width,[a-z]\.context\.canvas\.height\);/,
-    deleteModDebug);
-
-  //Background for infinity is also contained in funcWithFruit
-  //For outer wall
-  funcWithMiscRendering = assertReplace(funcWithMiscRendering,/this\.context\.fillRect\(0,0,this\.context\.canvas\.width,this\.context\.canvas\.height\);/,
-  'checkboxes.checkboxStatuses.border && $&');
-
-  //For light tiles (infinity)
-  funcWithMiscRendering = assertReplace(funcWithMiscRendering,/(?<=0\);)[a-z]\.context\.fillRect\(0,0,[a-z]\.context\.canvas\.width,[a-z]\.context\.canvas\.height\);/,
-  'checkboxes.checkboxStatuses.lightTiles && $&');
-
-  //For dark tiles (infinity)
-  funcWithMiscRendering = assertReplace(funcWithMiscRendering,/[a-z]\.context\.fillRect\([a-z]\*[a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}-[a-z]\.x\+[a-z]\.x,[a-z]\*[a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}-[a-z]\.y\+[a-z]\.y,[a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6},[a-z]\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\);/,
-  'checkboxes.checkboxStatuses.darkTiles && $&');
-
-  //Also has a canvas that we can delete to hide all but shadow
-  funcWithMiscRendering = assertReplace(funcWithMiscRendering,/this\.[$a-zA-Z0-9_]{0,6}\.drawImage\(this\.[$a-zA-Z0-9_]{0,6}\.canvas,\n?[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6}\);if/,
-  'checkboxes.checkboxStatuses.allButShadow && $&');
-
-  //all but shadow, but only for infinity
-  funcWithMiscRendering = assertReplace(funcWithMiscRendering,/this\.context\.drawImage\(this\.[$a-zA-Z0-9_]{0,6}\.canvas,\n?[$a-zA-Z0-9_]{0,6}-[$a-zA-Z0-9_]{0,6},[$a-zA-Z0-9_]{0,6}-[$a-zA-Z0-9_]{0,6}\)}else/,
-  'checkboxes.checkboxStatuses.allButShadow && $&');
-
-  eval(funcWithMiscRendering);
-
-  let funcWithLockRendering = findFunctionInCode(code,/[$a-zA-Z0-9_]{0,6}\.prototype\.render=function\(\)$/,
-  /this\.[$a-zA-Z0-9_]{0,6}.save\(\),this\.[$a-zA-Z0-9_]{0,6}\.translate\([a-z],[a-z]\),this\.[$a-zA-Z0-9_]{0,6}\.rotate\([a-z]\),/,
-  false);
-
-  //background for falling lock piece
-  funcWithLockRendering = assertReplace(funcWithLockRendering,/this\.[$a-zA-Z0-9_]{0,6}\.fillRect\(-\(this\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\/2\)\*[$a-zA-Z0-9_]{0,6},-\(this\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\/2\)\*[$a-zA-Z0-9_]{0,6},this\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\*[$a-zA-Z0-9_]{0,6},this\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\*\n?[$a-zA-Z0-9_]{0,6}\)\)/,
-  'checkboxes.checkboxStatuses.walls && $&');
-
-  //lock icon and sokoban icon falling
-  funcWithLockRendering = assertReplace(funcWithLockRendering,/(drawImage\(0===[a-z]\.type\?)(this\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.canvas):\n?(this\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.canvas)/,
-  '$1 (checkboxes.checkboxStatuses.walls ? $2 : new Image()) : (checkboxes.checkboxStatuses.sokobanBox ? $3 : new Image())');
-
-  eval(funcWithLockRendering);
-
-  let funcWithKeyRendering = findFunctionInCode(code,/[$a-zA-Z0-9_]{0,6}\.prototype\.render=function\(a\)$/,
-  /this\.[$a-zA-Z0-9_]{0,6}\.drawImage\(this\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.canvas,\n?128\*[a-z]\.type,0,128,128,[a-z]\.x-[a-z]\/2,[a-z]\.y-[a-z]\/2,[a-z],[a-z]\);/,
-  deleteModDebug);
-
-  //keys
-  funcWithKeyRendering = assertReplace(funcWithKeyRendering,/this\.[$a-zA-Z0-9_]{0,6}\.drawImage\(this\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.canvas,\n?128\*[a-z]\.type,0,128,128,[a-z]\.x-[a-z]\/2,[a-z]\.y-[a-z]\/2,[a-z],[a-z]\)/,
-  'checkboxes.checkboxStatuses.keys && $&');
-
-  //keys upside down
-  funcWithKeyRendering = assertReplace(funcWithKeyRendering,/this\.[$a-zA-Z0-9_]{0,6}\.drawImage\(this\.[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.canvas,128\*[a-z]\.type,0,128,128,-\([a-z]\/2\),-\([a-z]\/2\),[a-z],[a-z]\),/,
-  'checkboxes.checkboxStatuses.keys && $&');
-
-  eval(funcWithKeyRendering);
-
-  let funcWithBodyLines = findFunctionInCode(code, /[$a-zA-Z0-9_]{0,6}\.prototype\.render=function\(a,b,c\)$/,
-  /quadraticCurveTo/,
-  deleteModDebug);
-
-  funcWithBodyLines = assertReplace(funcWithBodyLines,/[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.fill\(\);/,
-  '(flashSnakeStatus.currentlyFlashingSnake || checkboxes.checkboxStatuses.lumps) && $&');
-
-  funcWithBodyLines = assertReplaceAll(funcWithBodyLines,/[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.lineTo\([$a-zA-Z0-9_]{0,6}\.x,[$a-zA-Z0-9_]{0,6}\.y\)/g,
-  '(flashSnakeStatus.currentlyFlashingSnake || checkboxes.checkboxStatuses.body) && $&');
-
-  funcWithBodyLines = assertReplaceAll(funcWithBodyLines,/[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.quadraticCurveTo\([$a-zA-Z0-9_]{0,6}\.x,[$a-zA-Z0-9_]{0,6}\.y,[$a-zA-Z0-9_]{0,6}\.x,[$a-zA-Z0-9_]{0,6}\.y\)/g,
-  '(flashSnakeStatus.currentlyFlashingSnake || checkboxes.checkboxStatuses.body) && $&');
-
-  //Body scale
-  funcWithBodyLines = assertReplace(funcWithBodyLines,/\.8/,'(snakeScale.tailStart * 0.8)');
-  funcWithBodyLines = assertReplace(funcWithBodyLines,/\.4/,'(snakeScale.tailEnd * 0.4)');
-
-  eval(funcWithBodyLines);
-
-  //Portals
-  let funcWithPortals = findFunctionInCode(code, /[$a-zA-Z0-9_]{0,6}\.prototype\.render=function\(a\)$/,
-  /[$a-zA-Z0-9_]{0,6}=new [$a-zA-Z0-9_]{0,6}\([$a-zA-Z0-9_]{0,6}\*Math\.cos\(2\*[$a-zA-Z0-9_]{0,6}\*Math\.PI\),[$a-zA-Z0-9_]{0,6}\*Math\.sin\(2\*[$a-zA-Z0-9_]{0,6}\*Math\.PI\)\);/,
-  deleteModDebug);
-
-  funcWithPortals = assertReplaceAll(funcWithPortals,/[$a-zA-Z0-9_]{0,6}\.fill\(\)/g,
-  'checkboxes.checkboxStatuses.portals && $&');
-
-  eval(funcWithPortals);
-
-  let mainClass = code.match(/([$a-zA-Z0-9_]{0,6})=function\(a,b,c\){this\.settings=[a-z];this\.menu=[a-z];this\.header=[a-z];/)[1];
-
-  //For flashing snake body when we eat an apple
-  let funcWithEat = findFunctionInCode(code, /[$a-zA-Z0-9_]{0,6}\.tick=function\(\)$/,
-  /if\([$a-zA-Z0-9_]{0,6}\|\|[$a-zA-Z0-9_]{0,6}\){var [$a-zA-Z0-9_]{0,6}=\n?[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6};[$a-zA-Z0-9_]{0,6}\|\|\([$a-zA-Z0-9_]{0,6}=!0,[$a-zA-Z0-9_]{0,6}\?[$a-zA-Z0-9_]{0,6}\.[$a-zA-Z0-9_]{0,6}\.play\(\)/,
-  deleteModDebug);
-
-  funcWithEat = assertReplace(funcWithEat,/if\([$a-zA-Z0-9_]{0,6}\|\|[$a-zA-Z0-9_]{0,6}\){/,
-  '$& checkboxes.checkboxStatuses.flashSnake && brieflyShowSnake();');
-
-  funcWithEat = swapInMainClassPrototype(mainClass, funcWithEat);
-  eval(funcWithEat);
-}
-
-function swapInMainClassPrototype(mainClass, functionText) {
-  functionText = assertReplace(functionText, /^[$a-zA-Z0-9_]{0,6}/,`${mainClass}.prototype`);
-  return functionText;
-}
-
-/*
-This function will search for a function/method in some code and return this function as a string
-code will usually be the snake source code
-functionSignature will be regex matching the beginning of the function/method (must end in $),
-for example if we are trying to find a function like s_xD = function(a, b, c, d, e) {......}
-then put functionSignature = /[$a-zA-Z0-9_]{0,6}=function\(a,b,c,d,e\)$/
-somethingInsideFunction will be regex matching something in the function
-for example if we are trying to find a function like s_xD = function(a, b, c, d, e) {...a.Xa&&10!==a.Qb...}
-then put somethingInsideFunction = /a\.[$a-zA-Z0-9_]{0,6}&&10!==a\.[$a-zA-Z0-9_]{0,6}/
-*/
-function findFunctionInCode(code, functionSignature, somethingInsideFunction, logging = false) {
-  let functionSignatureSource = functionSignature.source;
-  let functionSignatureFlags = functionSignature.flags;//Probably empty string
-
-  /*Check functionSignature ends in $*/
-  if (functionSignatureSource[functionSignatureSource.length - 1] !== "$") {
-    throw new Error("functionSignature regex should end in $");
-  }
-
-  /*Allow line breaks after commas or =. This is bit sketchy, but should be ok as findFunctionInCode is used in a quite limited way*/
-  functionSignatureSource.replaceAll(/,|=/g,'$&\\n?');
-  functionSignature = new RegExp(functionSignatureSource, functionSignatureFlags);
-
-  /*get the position of somethingInsideFunction*/
-  let indexWithinFunction = code.search(somethingInsideFunction);
-  if (indexWithinFunction == -1) {
-    console.log("%cCouldn't find a match for somethingInsideFunction", "color:red;");
-    diagnoseRegexError(code, somethingInsideFunction);
-  }
-
-  /*expand outwards from somethingInsideFunction until we get to the function signature, then count brackets
-  to find the end of the function*/
-  startIndex = 0;
-  for (let i = indexWithinFunction; i >= 0; i--) {
-    let startOfCode = code.substring(0, i);
-    startIndex = startOfCode.search(functionSignature);
-    if (startIndex !== -1) {
-      break;
-    }
-    if (i == 0) {
-      throw new Error("Couldn't find function signature");
-    }
-  }
-
-  let bracketCount = 0;
-  let foundFirstBracket = false;
-  let endIndex = 0;
-  /*Use bracket counting to find the whole function*/
-  let codeLength = code.length;
-  for (let i = startIndex; i <= codeLength; i++) {
-    if (!foundFirstBracket && code[i] == "{") {
-      foundFirstBracket = true;
-    }
-
-    if (code[i] == "{") {
-      bracketCount++;
-    }
-    if (code[i] == "}") {
-      bracketCount--;
-    }
-    if (foundFirstBracket && bracketCount == 0) {
-      endIndex = i;
-      break;
-    }
-
-    if (i == codeLength) {
-      throw new Error("Couldn't pair up brackets");
-    }
-  }
-
-  let fullFunction = code.substring(startIndex, endIndex + 1);
-
-  /*throw error if fullFunction doesn't contain something inside function - i.e. function signature was wrong*/
-  if (fullFunction.search(somethingInsideFunction) === -1) {
-    throw new Error("Function signature does not belong to the same function as somethingInsideFunction");
-  }
-
-  if (logging) {
-    console.log(fullFunction);
-  }
-
-  return fullFunction;
-}
-
-/*
-Same as replace, but throws an error if nothing is changed
-*/
-function assertReplace(baseText, regex, replacement) {
-  if (typeof baseText !== 'string') {
-    throw new Error('String argument expected for assertReplace');
-  }
-  let outputText = baseText.replace(regex, replacement);
-
-  //Throw warning if nothing is replaced
-  if (baseText === outputText) {
-    diagnoseRegexError(baseText, regex);
-  }
-
-  return outputText;
-}
-
-/*
-Same as replaceAll, but throws an error if nothing is changed
-*/
-function assertReplaceAll(baseText, regex, replacement) {
-  if (typeof baseText !== 'string') {
-    throw new Error('String argument expected for assertReplace');
-  }
-  let outputText = baseText.replaceAll(regex, replacement);
-
-  //Throw warning if nothing is replaced
-  if (baseText === outputText) {
-    diagnoseRegexError(baseText, regex);
-  }
-
-  return outputText;
-}
-
-function diagnoseRegexError(baseText, regex) {  
-  if(!(regex instanceof RegExp)) {
-    throw new Error('Failed to find match using string argument. No more details available');
-  }
-
-  //see if removing line breaks works - in that case we can give a more useful error message
-  let oneLineText = baseText.replaceAll(/\n/g,'');
-  let res = regex.test(oneLineText);
-
-  //If line breaks don't solve the issue then throw a general error
-  if (!res) {
-    throw new Error('Failed to find match for regex.');
-  }
-
-  //Try to suggest correct regex to use for searching
-  let regexSource = regex.source;
-  let regexFlags = regex.flags;
-
-  //Look at all the spots where line breaks might occur and try adding \n? there to see if it makes a difference
-  //It might be easier to just crudely brute force putting \n? at each possible index?
-  for(let breakableChar of ["%","&","\\*","\\+",",","-","\\/",":",";","<","=",">","\\?","{","\\|","}"]) {
-    for(let pos = regexSource.indexOf(breakableChar); pos !== -1; pos = regexSource.indexOf(breakableChar, pos + 1)) {
-      //Remake the regex with a new line at the candidate position
-      let candidateRegexSource = `${regexSource.slice(0,pos + breakableChar.length)}\\n?${regexSource.slice(pos + breakableChar.length)}`;
-      let candidateRegex;
-      
-      try{
-        candidateRegex = new RegExp(candidateRegexSource, regexFlags);
-      } catch(err) {
-        continue;
-      }
-
-      //See if the new regex works
-      let testReplaceResult = candidateRegex.test(baseText);
-      if(testReplaceResult) {
-        //Success we found the working regex! Give descriptive error message to user and log suggested regex with new line in correct place
-        console.log(`Suggested regex improvement:
-${candidateRegex}`);
-        throw new Error('Suggested improvement found! Error with line break, failed to find match for regex. See logged output for regex to use instead that should hopefully fix this.');
-      }
-    }
-  }
-
-  throw new Error('Line break error! Failed to failed to find match for regex - most likely caused by a new line break. No suggestions provided');
-}
-
-snake.deleteStuffMod();
