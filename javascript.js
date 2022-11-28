@@ -81,8 +81,12 @@ function setupEventListeners() {
   document.getElementById('left-eye').onchange = function() {
     checkboxes.checkboxStatuses.leftEye = this.checked;
   }
+  
+  document.getElementById('left-eye').onchange = function() {
+    checkboxes.checkboxStatuses.leftEye = this.checked;
+  }
 
-  document.getElementById('right-eye').onchange = function() {
+  document.getElementById('gay guy').onchange = function() {
     checkboxes.checkboxStatuses.rightEye = this.checked;
   }
 
@@ -275,9 +279,7 @@ function injectInitialHtml() {
         <!--End test area-->
         <div style="text-align:center; clear:both"><a id="delete-stuff-close" href="#">Close</a> (Press i to show again)</div>
       </div>
-
     </div>
-
   </div>
 </div>
 <template id="tooltiptemplate">
@@ -639,13 +641,10 @@ function swapInMainClassPrototype(mainClass, functionText) {
 
 /*
 This function will search for a function/method in some code and return this function as a string
-
 code will usually be the snake source code
-
 functionSignature will be regex matching the beginning of the function/method (must end in $),
 for example if we are trying to find a function like s_xD = function(a, b, c, d, e) {......}
 then put functionSignature = /[$a-zA-Z0-9_]{0,6}=function\(a,b,c,d,e\)$/
-
 somethingInsideFunction will be regex matching something in the function
 for example if we are trying to find a function like s_xD = function(a, b, c, d, e) {...a.Xa&&10!==a.Qb...}
 then put somethingInsideFunction = /a\.[$a-zA-Z0-9_]{0,6}&&10!==a\.[$a-zA-Z0-9_]{0,6}/
