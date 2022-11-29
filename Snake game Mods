@@ -218,7 +218,7 @@ function injectInitialHtml() {
               <label><input id="border" type="checkbox" checked>Border</label>
             </li>
             <li>
-              <label><input id="spin" type="checkbox">???</label>
+              <label><input id="spin" type="checkbox">spin</label>
             </li>
           </ul>
         </div>
